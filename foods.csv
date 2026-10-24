@@ -1,0 +1,47 @@
+﻿id,barcode,name,brand,kcal,protein,carbs,fat,sugar,sat_fat,fibre,sodium_mg,serving_g,source,added
+g-egg,,"Egg, whole (size M)",,143,12.6,0.7,9.5,0.4,3.1,0,142,55,generic (approx.),2026-10-24
+g-egg-white,,Egg white,,52,10.9,0.7,0.2,0.7,0,0,166,33,generic (approx.),2026-10-24
+g-cottage-5,,Cottage cheese 5%,,97,11,2.5,5,2.5,3.2,0,380,250,generic (approx.),2026-10-24
+g-white-cheese-5,,White cheese 5%,,94,9,3.4,5,3.4,3.2,0,50,150,generic (approx.),2026-10-24
+g-yellow-cheese-9,,Yellow cheese 9%,,255,31,0.5,9,0,5.5,0,600,20,generic (approx.),2026-10-24
+g-tuna-water,,"Tuna in water, drained",,116,26,0,1,0,0.3,0,300,120,generic (approx.),2026-10-24
+g-turkey-pastrami,,Turkey breast pastrami (up to 3% fat),,105,19,3,2,1.5,0.6,0,900,30,generic (approx.),2026-10-24
+g-whey,,"Whey protein powder (generic, scan yours)",,400,80,7,6,5,3,0,300,30,generic (approx.),2026-10-24
+g-wholewheat-bread,,Wholewheat bread,,247,13,41,3.4,6,0.7,7,450,30,generic (approx.),2026-10-24
+g-oats,,Oats,,379,13,67,6.5,1,1.1,10,6,50,generic (approx.),2026-10-24
+g-rice-cakes,,Brown rice cakes,,387,8,81,2.8,0.9,0.6,4.2,30,9,generic (approx.),2026-10-24
+g-chicken-breast,,"Chicken breast, cooked",,165,31,0,3.6,0,1,0,74,200,generic (approx.),2026-10-24
+g-turkey-breast,,"Turkey breast, cooked",,147,30,0,2.1,0,0.6,0,64,200,generic (approx.),2026-10-24
+g-chicken-liver,,"Chicken liver, cooked",,167,24,0.9,6.5,0,2.1,0,76,200,generic (approx.),2026-10-24
+g-chicken-thigh,,"Chicken thigh, boneless skinless, cooked",,209,26,0,10.9,0,3,0,95,160,generic (approx.),2026-10-24
+g-beef-shoulder,,"Beef shoulder, lean, cooked",,180,28,0,7,0,2.7,0,65,180,generic (approx.),2026-10-24
+g-sirloin,,"Sirloin steak, cooked",,200,30,0,8,0,3,0,60,160,generic (approx.),2026-10-24
+g-tilapia,,"Tilapia, cooked",,128,26,0,2.7,0,0.9,0,56,250,generic (approx.),2026-10-24
+g-salmon,,"Salmon, cooked",,206,22,0,12,0,2.5,0,61,160,generic (approx.),2026-10-24
+g-tofu-firm,,Firm tofu,,144,15.8,2.8,8.7,0.6,1.3,2.3,14,250,generic (approx.),2026-10-24
+g-rice-white,,"White rice, cooked",,130,2.7,28,0.3,0.1,0.1,0.4,1,150,generic (approx.),2026-10-24
+g-quinoa,,"Quinoa, cooked",,120,4.4,21.3,1.9,0.9,0.2,2.8,7,150,generic (approx.),2026-10-24
+g-buckwheat,,"Buckwheat, cooked",,92,3.4,20,0.6,0.9,0.1,2.7,4,150,generic (approx.),2026-10-24
+g-bulgur,,"Bulgur, cooked",,83,3.1,18.6,0.2,0.1,0,4.5,5,200,generic (approx.),2026-10-24
+g-lentils,,"Lentils, cooked",,116,9,20,0.4,1.8,0.1,7.9,2,170,generic (approx.),2026-10-24
+g-chickpeas,,"Chickpeas, cooked",,164,8.9,27.4,2.6,4.8,0.3,7.6,7,170,generic (approx.),2026-10-24
+g-pasta,,"Pasta, cooked",,158,5.8,31,0.9,0.6,0.2,1.8,1,130,generic (approx.),2026-10-24
+g-potato,,"Potato, raw",,77,2,17,0.1,0.8,0,2.2,6,220,generic (approx.),2026-10-24
+g-sweet-potato,,"Sweet potato, raw",,86,1.6,20,0.1,4.2,0,3,55,220,generic (approx.),2026-10-24
+g-cucumber,,Cucumber,,15,0.7,3.6,0.1,1.7,0,0.5,2,100,generic (approx.),2026-10-24
+g-tomato,,Tomato,,18,0.9,3.9,0.2,2.6,0,1.2,5,120,generic (approx.),2026-10-24
+g-broccoli,,Broccoli,,34,2.8,6.6,0.4,1.7,0,2.6,33,150,generic (approx.),2026-10-24
+g-banana,,Banana (peeled),,89,1.1,22.8,0.3,12.2,0.1,2.6,1,120,generic (approx.),2026-10-24
+g-apple,,Apple,,52,0.3,13.8,0.2,10.4,0,2.4,1,180,generic (approx.),2026-10-24
+g-strawberries,,Strawberries,,32,0.7,7.7,0.3,4.9,0,2,1,150,generic (approx.),2026-10-24
+g-blueberries,,Blueberries,,57,0.7,14.5,0.3,10,0,2.4,1,100,generic (approx.),2026-10-24
+g-dates-medjool,,Medjool date,,277,1.8,75,0.2,66,0,6.7,1,24,generic (approx.),2026-10-24
+g-olive-oil,,Olive oil,,884,0,0,100,0,13.8,0,2,5,generic (approx.),2026-10-24
+g-tahini,,Raw tahini,,595,17,21.2,53.8,0.5,7.5,9.3,115,15,generic (approx.),2026-10-24
+g-avocado,,Avocado,,160,2,8.5,14.7,0.7,2.1,6.7,7,50,generic (approx.),2026-10-24
+g-almonds,,Almonds,,579,21.2,21.6,49.9,4.4,3.8,12.5,1,15,generic (approx.),2026-10-24
+g-walnuts,,Walnuts,,654,15.2,13.7,65.2,2.6,6.1,6.7,2,15,generic (approx.),2026-10-24
+g-peanut-butter,,Natural peanut butter,,588,25,20,50,9,10,6,17,16,generic (approx.),2026-10-24
+g-honey,,Honey,,304,0.3,82.4,0,82,0,0.2,4,7,generic (approx.),2026-10-24
+g-sriracha,,Sriracha,,93,1.9,19,0.9,15,0.1,2.2,2000,15,generic (approx.),2026-10-24
+g-ketchup,,Ketchup,,101,1,27,0.1,22,0,0.3,907,15,generic (approx.),2026-10-24
