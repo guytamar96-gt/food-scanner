@@ -3,100 +3,157 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<meta name="theme-color" content="#0f1115">
+<meta name="theme-color" content="#0B0B0C">
 <title>Food Scanner</title>
 <link rel="manifest" href="manifest.json">
 <link rel="icon" href="icon.svg" type="image/svg+xml">
 <link rel="apple-touch-icon" href="icon-192.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Inter+Tight:wght@600;700&display=swap">
 <style>
+/* Graphite: near-black, one lime accent, quiet cards. Scan view uses the Mono camera frame. */
 :root {
-  --bg: #0f1115; --panel: #181b22; --panel2: #20242d; --line: #2c313c; --text: #eef0f4; --muted: #9aa2b1;
-  --accent: #4ade80; --accent-ink: #06210f; --danger: #f87171; --warn: #fbbf24;
-  --protein: #60a5fa; --carbs: #fbbf24; --fat: #f472b6; --radius: 14px;
+  --bg: #0B0B0C; --panel: #151517; --panel2: #1C1C1F; --line: #26262A; --hair: #1F1F22;
+  --text: #F4F4F5; --muted: #9A9AA3; --dim: #6B6B73;
+  --accent: #C8F135; --accent-ink: #0B0B0C; --danger: #F87171; --warn: #F5B83D;
+  --protein: #60A5FA; --carbs: #F5B83D; --fat: #A78BFA;
+  --display: "Inter Tight", Inter, system-ui, sans-serif;
+  --radius: 20px;
+  color-scheme: dark;
 }
 * { box-sizing: border-box; }
-html, body { margin: 0; background: var(--bg); color: var(--text); font: 16px/1.45 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; -webkit-tap-highlight-color: transparent; }
-body { padding-bottom: calc(76px + env(safe-area-inset-bottom)); }
-header { position: sticky; top: 0; z-index: 5; background: var(--bg); padding: calc(10px + env(safe-area-inset-top)) 16px 10px; display: flex; align-items: center; gap: 10px; border-bottom: 1px solid var(--line); }
-header h1 { font-size: 18px; margin: 0; flex: 1; }
-#sync { font-size: 12px; color: var(--muted); }
-#sync.err { color: var(--danger); }
-main { padding: 16px; max-width: 560px; margin: 0 auto; }
-nav { position: fixed; left: 0; right: 0; bottom: 0; z-index: 6; display: grid; grid-template-columns: repeat(4, 1fr); background: var(--panel); border-top: 1px solid var(--line); padding-bottom: env(safe-area-inset-bottom); }
-nav button { background: none; border: 0; color: var(--muted); padding: 10px 0 8px; font: inherit; font-size: 12px; display: flex; flex-direction: column; align-items: center; gap: 3px; }
-nav button svg { width: 22px; height: 22px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+[hidden] { display: none !important; }
+html, body { margin: 0; background: var(--bg); color: var(--text); font: 15px/1.45 Inter, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; -webkit-tap-highlight-color: transparent; }
+body { padding-bottom: calc(88px + env(safe-area-inset-bottom)); }
+button, input, select, textarea { font: inherit; color: inherit; }
+button { cursor: pointer; }
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+header { position: sticky; top: 0; z-index: 5; background: var(--bg); padding: calc(18px + env(safe-area-inset-top)) 20px 12px; display: flex; align-items: center; gap: 10px; max-width: 600px; margin: 0 auto; }
+header h1 { font-family: var(--display); font-size: 28px; font-weight: 700; letter-spacing: -0.02em; margin: 0; flex: 1; }
+.sync { display: inline-flex; align-items: center; gap: 6px; font-size: 13px; color: var(--muted); }
+.sync i { width: 7px; height: 7px; border-radius: 50%; background: var(--accent); }
+.sync.busy i { background: var(--warn); }
+.sync.err { color: var(--danger); }
+.sync.err i { background: var(--danger); }
+main { padding: 4px 20px 20px; max-width: 600px; margin: 0 auto; }
+nav { position: fixed; left: 0; right: 0; bottom: 0; z-index: 6; display: grid; grid-template-columns: repeat(4, 1fr); background: var(--bg); border-top: 1px solid var(--hair); padding: 8px 0 calc(8px + env(safe-area-inset-bottom)); }
+nav button { background: none; border: 0; color: #8A8A93; padding: 6px 0; font-size: 11px; font-weight: 600; display: flex; flex-direction: column; align-items: center; gap: 4px; }
+nav button svg { width: 22px; height: 22px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
 nav button[aria-selected="true"] { color: var(--accent); }
-h2 { font-size: 15px; margin: 18px 0 8px; color: var(--muted); font-weight: 600; text-transform: uppercase; letter-spacing: .04em; }
-.card { background: var(--panel); border: 1px solid var(--line); border-radius: var(--radius); padding: 14px; margin-bottom: 12px; }
-.btn { appearance: none; border: 1px solid var(--line); background: var(--panel2); color: var(--text); font: inherit; font-weight: 600; border-radius: 12px; padding: 12px 14px; display: inline-flex; align-items: center; justify-content: center; gap: 8px; cursor: pointer; }
-.btn.primary { background: var(--accent); color: var(--accent-ink); border-color: var(--accent); }
+h2 { font-size: 12px; margin: 22px 0 8px; color: var(--muted); font-weight: 600; text-transform: uppercase; letter-spacing: .08em; display: flex; justify-content: space-between; }
+h2 span { text-transform: none; letter-spacing: 0; font-size: 13px; font-weight: 500; }
+.card { background: var(--panel); border-radius: var(--radius); padding: 18px; margin-bottom: 12px; }
+.btn { appearance: none; border: 1px solid var(--line); background: var(--panel); color: var(--text); font-weight: 600; border-radius: 16px; min-height: 52px; padding: 0 18px; display: inline-flex; align-items: center; justify-content: center; gap: 8px; text-decoration: none; }
+.btn.primary { background: var(--accent); color: var(--accent-ink); border-color: var(--accent); font-weight: 700; font-size: 16px; }
 .btn.danger { color: var(--danger); }
 .btn.block { width: 100%; margin-top: 10px; }
-.btn:disabled { opacity: .5; }
+.btn:disabled { opacity: .4; }
+.link { background: none; border: 0; color: var(--muted); font-size: 14px; font-weight: 600; padding: 12px 4px; text-decoration: underline; text-underline-offset: 3px; }
 .row { display: flex; gap: 10px; align-items: center; }
 .row > * { flex: 1; }
-input, select, textarea { width: 100%; background: var(--panel2); color: var(--text); border: 1px solid var(--line); border-radius: 10px; padding: 11px 12px; font: inherit; }
+input, select, textarea { width: 100%; background: var(--panel); color: var(--text); border: 1px solid transparent; border-radius: 14px; padding: 13px 14px; font-size: 16px; }
+input:focus, select:focus, textarea:focus { border-color: var(--line); outline: none; }
 textarea { min-height: 80px; font-size: 13px; }
-label.f { display: block; font-size: 13px; color: var(--muted); margin-top: 10px; }
-label.f input, label.f select { margin-top: 4px; color: var(--text); }
-.grid4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; }
+label.f { display: block; font-size: 12px; font-weight: 600; color: var(--muted); margin-top: 12px; }
+label.f input, label.f select { margin-top: 6px; background: var(--panel2); }
+.grid4 { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 8px; }
 .grid4 label.f { margin-top: 8px; }
-.grid2 { display: grid; grid-template-columns: repeat(2, 1fr); gap: 0 10px; }
+.grid2 { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0 10px; }
 .muted { color: var(--muted); }
 .small { font-size: 13px; }
-.msg { background: var(--panel2); border-left: 3px solid var(--accent); padding: 10px 12px; border-radius: 8px; font-size: 14px; margin: 10px 0; }
-.msg.warn { border-color: var(--warn); }
-.msg.err { border-color: var(--danger); }
-.viewer { position: relative; border-radius: var(--radius); overflow: hidden; background: #000; aspect-ratio: 4 / 3; border: 1px solid var(--line); }
+.msg { background: var(--panel2); border-radius: 14px; padding: 12px 14px; font-size: 14px; margin: 12px 0; color: #D4D4D8; }
+.msg.warn { color: #F3DFAE; }
+.msg.err { color: #FCA5A5; }
+.pill { display: inline-block; font-size: 12px; font-weight: 600; padding: 6px 10px; border-radius: 99px; background: var(--panel2); color: var(--muted); }
+.pill.new { color: var(--accent); background: rgba(200, 241, 53, .1); }
+/* scan: Mono-style frame */
+.viewer { position: relative; border-radius: 6px; overflow: hidden; background: #050506; aspect-ratio: 1 / 1; max-height: 52vh; width: 100%; border: 1px solid var(--hair); }
 .viewer video { width: 100%; height: 100%; object-fit: cover; display: block; }
-.viewer .frame { position: absolute; left: 10%; right: 10%; top: 30%; bottom: 30%; border: 2px solid rgba(74, 222, 128, .9); border-radius: 12px; box-shadow: 0 0 0 999px rgba(0, 0, 0, .35); pointer-events: none; }
-.viewer .idle { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 10px; color: var(--muted); text-align: center; padding: 20px; }
-.viewer .torch { position: absolute; right: 10px; top: 10px; background: rgba(0, 0, 0, .55); border: 0; color: #fff; border-radius: 999px; padding: 8px 12px; font: inherit; font-size: 13px; }
-.list .item { display: flex; align-items: center; gap: 10px; padding: 11px 0; border-bottom: 1px solid var(--line); }
+.viewer .corner { position: absolute; width: 20px; height: 20px; border: 0 solid #fff; pointer-events: none; }
+.viewer .tl { left: 12%; top: 32%; border-left-width: 2px; border-top-width: 2px; }
+.viewer .tr { right: 12%; top: 32%; border-right-width: 2px; border-top-width: 2px; }
+.viewer .bl { left: 12%; bottom: 32%; border-left-width: 2px; border-bottom-width: 2px; }
+.viewer .br { right: 12%; bottom: 32%; border-right-width: 2px; border-bottom-width: 2px; }
+.viewer .line { position: absolute; left: 12%; right: 12%; top: 50%; height: 1px; background: var(--accent); pointer-events: none; }
+.viewer .cap { position: absolute; left: 0; right: 0; bottom: 16px; text-align: center; font-size: 11px; letter-spacing: .12em; text-transform: uppercase; color: #B9B9C0; pointer-events: none; }
+.viewer .idle { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 14px; color: var(--muted); text-align: center; padding: 24px; background: #050506; }
+.viewer .torch { position: absolute; right: 12px; top: 12px; width: 44px; height: 44px; border-radius: 22px; background: rgba(255, 255, 255, .1); border: 0; display: flex; align-items: center; justify-content: center; }
+.viewer .torch svg { width: 20px; height: 20px; fill: none; stroke: #fff; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+.search { display: flex; align-items: center; gap: 10px; border-bottom: 1px solid #3A3A3F; margin-top: 18px; }
+.search input { background: none; border: 0; border-radius: 0; padding: 14px 0; }
+.search svg { width: 18px; height: 18px; fill: none; stroke: var(--muted); stroke-width: 1.8; stroke-linecap: round; flex: none; }
+/* lists */
+.list .item { display: flex; align-items: center; gap: 14px; padding: 13px 0; border-bottom: 1px solid var(--hair); }
 .list .item:last-child { border-bottom: 0; }
 .list .item .t { flex: 1; min-width: 0; }
 .list .item .n { font-weight: 600; overflow-wrap: anywhere; }
 .list .item .s { font-size: 13px; color: var(--muted); }
-.list .item .k { font-weight: 700; white-space: nowrap; }
+.list .item .k { font-weight: 600; white-space: nowrap; font-variant-numeric: tabular-nums; }
+.list .item .av { width: 40px; height: 40px; border-radius: 12px; background: var(--panel2); display: flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 700; color: var(--accent); flex: none; }
+.list .item .plus { width: 18px; height: 18px; fill: none; stroke: var(--dim); stroke-width: 2; stroke-linecap: round; flex: none; }
 .tap { cursor: pointer; }
-.nutr { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; text-align: center; margin: 12px 0; }
-.nutr div { background: var(--panel2); border-radius: 10px; padding: 8px 4px; }
-.nutr b { display: block; font-size: 18px; }
-.nutr span { font-size: 12px; color: var(--muted); }
-.extra { display: grid; grid-template-columns: repeat(2, 1fr); gap: 4px 14px; font-size: 13px; color: var(--muted); }
-.extra b { color: var(--text); font-weight: 600; }
-.quick { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
-.quick button { background: var(--panel2); border: 1px solid var(--line); color: var(--text); border-radius: 999px; padding: 6px 12px; font: inherit; font-size: 13px; }
-.bar { height: 8px; background: var(--panel2); border-radius: 99px; overflow: hidden; margin: 4px 0 10px; }
-.bar i { display: block; height: 100%; background: var(--accent); border-radius: 99px; }
-.bar.over i { background: var(--warn); }
-.tot { display: flex; justify-content: space-between; font-size: 14px; }
-.seg { display: flex; background: var(--panel2); border-radius: 10px; padding: 3px; gap: 3px; }
-.seg button { flex: 1; background: none; border: 0; color: var(--muted); font: inherit; font-size: 14px; padding: 7px; border-radius: 8px; }
-.seg button[aria-pressed="true"] { background: var(--panel); color: var(--text); font-weight: 600; }
-.sheet-bg { position: fixed; inset: 0; background: rgba(0, 0, 0, .6); z-index: 20; display: flex; align-items: flex-end; justify-content: center; }
-.sheet { background: var(--panel); width: 100%; max-width: 560px; max-height: 92vh; overflow: auto; border-radius: 18px 18px 0 0; padding: 16px 16px calc(20px + env(safe-area-inset-bottom)); border-top: 1px solid var(--line); }
-.sheet h3 { margin: 0; font-size: 19px; overflow-wrap: anywhere; }
-.sheet .top { display: flex; align-items: flex-start; gap: 10px; }
-.sheet .top h3 { flex: 1; }
-.x { background: var(--panel2); border: 0; color: var(--text); border-radius: 999px; width: 34px; height: 34px; font-size: 18px; }
-.tag { display: inline-block; font-size: 11px; padding: 2px 8px; border-radius: 99px; background: var(--panel2); color: var(--muted); margin-top: 4px; }
-.toast { position: fixed; left: 50%; bottom: calc(90px + env(safe-area-inset-bottom)); transform: translateX(-50%); background: var(--text); color: var(--bg); padding: 10px 16px; border-radius: 999px; font-size: 14px; font-weight: 600; z-index: 30; max-width: 90vw; text-align: center; }
-.empty { color: var(--muted); font-size: 14px; padding: 8px 0; }
+.empty { color: var(--muted); font-size: 14px; padding: 10px 0; }
+/* product */
+.hero { background: var(--panel); border-radius: 24px; padding: 22px; margin: 16px 0; }
+.hero .big { display: flex; align-items: baseline; gap: 8px; }
+.hero .big b { font-family: var(--display); font-size: 56px; font-weight: 700; letter-spacing: -0.03em; line-height: 1; font-variant-numeric: tabular-nums; }
+.hero .big span { font-size: 15px; color: var(--muted); }
+.macros3 { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; margin-top: 18px; }
+.macros3 i { display: block; height: 4px; border-radius: 2px; margin-bottom: 8px; }
+.macros3 b { display: block; font-size: 18px; font-weight: 700; font-variant-numeric: tabular-nums; }
+.macros3 span { font-size: 12px; color: var(--muted); }
+.lbl { font-size: 12px; font-weight: 600; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); margin: 18px 0 10px; display: block; }
+.stepper { display: flex; align-items: center; gap: 8px; height: 60px; border-radius: 16px; background: var(--panel); padding: 0 8px; }
+.stepper button { width: 44px; height: 44px; border-radius: 12px; border: 0; background: var(--panel2); font-size: 22px; flex: none; }
+.stepper input { flex: 1; min-width: 0; background: none; border: 0; text-align: center; font-family: var(--display); font-size: 24px; font-weight: 700; padding: 0; }
+.stepper .unit { font-size: 15px; color: var(--muted); margin-right: 4px; }
+.quick { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; }
+.quick button { background: var(--panel2); border: 0; border-radius: 99px; padding: 9px 13px; font-size: 13px; color: #D4D4D8; min-height: 36px; }
+.seg { display: grid; grid-auto-flow: column; grid-auto-columns: 1fr; gap: 4px; background: var(--panel); border-radius: 14px; padding: 4px; }
+.seg button { background: none; border: 0; color: var(--muted); font-size: 13px; padding: 11px 0; border-radius: 10px; }
+.seg button[aria-pressed="true"] { background: var(--text); color: var(--bg); font-weight: 600; }
+.per100 { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 6px 16px; font-size: 13px; color: var(--muted); }
+.per100 b { color: var(--text); font-weight: 600; }
+details summary { cursor: pointer; list-style: none; }
+details summary::-webkit-details-marker { display: none; }
+/* today */
+.daytype { background: var(--panel); border: 0; border-radius: 99px; padding: 8px 14px; font-size: 13px; font-weight: 600; min-height: 36px; }
+.daytype.on { background: rgba(200, 241, 53, .12); color: var(--accent); }
+.summary { display: flex; align-items: center; gap: 20px; }
+.ring { position: relative; width: 132px; height: 132px; flex: none; }
+.ring svg { width: 100%; height: 100%; transform: rotate(-90deg); }
+.ring .c { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+.ring .c b { font-family: var(--display); font-size: 30px; font-weight: 700; letter-spacing: -0.02em; font-variant-numeric: tabular-nums; }
+.ring .c span { font-size: 12px; color: var(--muted); }
+.mbars { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 12px; }
+.mbars .r1 { display: flex; justify-content: space-between; font-size: 13px; }
+.mbars .r1 span { color: var(--muted); font-variant-numeric: tabular-nums; }
+.bar { height: 6px; background: var(--line); border-radius: 3px; overflow: hidden; margin-top: 6px; }
+.bar i { display: block; height: 100%; border-radius: 3px; }
+@media (max-width: 360px) { .summary { flex-direction: column; } .mbars { width: 100%; } }
+/* sheets */
+.sheet-bg { position: fixed; inset: 0; background: rgba(0, 0, 0, .65); z-index: 20; display: flex; align-items: flex-end; justify-content: center; }
+.sheet { background: var(--bg); width: 100%; max-width: 600px; max-height: 94vh; overflow: auto; border-radius: 28px 28px 0 0; padding: 18px 20px calc(24px + env(safe-area-inset-bottom)); border-top: 1px solid var(--line); }
+.sheet h3 { margin: 0; font-family: var(--display); font-size: 26px; font-weight: 700; letter-spacing: -0.02em; overflow-wrap: anywhere; }
+.sheet .top { display: flex; align-items: flex-start; gap: 12px; }
+.sheet .top h3 { flex: 1; padding-top: 6px; }
+.x { background: var(--panel); border: 0; border-radius: 22px; width: 44px; height: 44px; font-size: 20px; flex: none; }
+.toast { position: fixed; left: 50%; bottom: calc(100px + env(safe-area-inset-bottom)); transform: translateX(-50%); background: var(--text); color: var(--bg); padding: 11px 18px; border-radius: 99px; font-size: 14px; font-weight: 600; z-index: 30; max-width: 90vw; text-align: center; white-space: nowrap; }
 ol.steps { padding-left: 20px; margin: 8px 0; font-size: 14px; }
-ol.steps li { margin-bottom: 6px; }
+ol.steps li { margin-bottom: 8px; }
 a { color: var(--accent); }
-[dir="auto"] { unicode-bidi: plaintext; }
+[dir="auto"] { unicode-bidi: plaintext; text-align: left; }
 </style>
 </head>
 <body>
-<header><h1>Food Scanner</h1><span id="sync"></span></header>
+<header><h1 id="title">Scan</h1><span id="sync" class="sync"></span></header>
 <main id="view"></main>
 <nav>
-  <button data-tab="scan" aria-selected="true"><svg viewBox="0 0 24 24"><path d="M3 7V4h3M21 7V4h-3M3 17v3h3M21 17v3h-3M7 8v8M10 8v8M13 8v8M17 8v8"/></svg>Scan</button>
-  <button data-tab="today" aria-selected="false"><svg viewBox="0 0 24 24"><path d="M7 3v8a2 2 0 0 0 2 2v8M5 3v5M9 3v5M17 21V3c-2 1-3 4-3 8h3"/></svg>Today</button>
-  <button data-tab="catalogue" aria-selected="false"><svg viewBox="0 0 24 24"><path d="M4 5h16M4 12h16M4 19h10"/></svg>Catalogue</button>
-  <button data-tab="settings" aria-selected="false"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg>Settings</button>
+  <button data-tab="scan" aria-selected="true"><svg viewBox="0 0 24 24"><path d="M3 7V4h3M21 7V4h-3M3 17v3h3M21 17v3h-3M8 8v8M12 8v8M16 8v8"/></svg>Scan</button>
+  <button data-tab="today" aria-selected="false"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8"/><path d="M12 8v4l3 2"/></svg>Today</button>
+  <button data-tab="catalogue" aria-selected="false"><svg viewBox="0 0 24 24"><path d="M5 6h14M5 12h14M5 18h9"/></svg>Foods</button>
+  <button data-tab="settings" aria-selected="false"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M4.9 4.9l2.1 2.1M17 17l2.1 2.1M2 12h3M19 12h3M4.9 19.1L7 17M17 7l2.1-2.1"/></svg>Settings</button>
 </nav>
 <div id="sheetRoot"></div>
 <script>
@@ -180,10 +237,10 @@ function delFood(id) {
 
 // ---------- GitHub sync ----------
 function setSync() {
-  const el = $('sync'); if (!el) return;
+  const el = $('sync'); if (!el || S.tab === 'today') return;
   const n = S.pending.length;
-  el.classList.toggle('err', !!S.syncErr);
-  el.textContent = S.syncing ? 'Saving…' : S.syncErr ? S.syncErr : n ? `${n} not saved yet` : 'Catalogue saved';
+  el.className = 'sync' + (S.syncErr ? ' err' : S.syncing || n ? ' busy' : '');
+  el.innerHTML = '<i></i>' + esc(S.syncing ? 'Saving…' : S.syncErr ? S.syncErr : n ? `${n} not saved yet` : 'Synced');
 }
 async function gh(path, opts = {}) {
   const r = await fetch('https://api.github.com/repos/' + REPO + path, Object.assign({}, opts, { headers: Object.assign({ Accept: 'application/vnd.github+json', Authorization: 'Bearer ' + S.token, 'X-GitHub-Api-Version': '2022-11-28' }, opts.headers || {}) }));
@@ -259,19 +316,21 @@ async function lookupOFF(code) {
 function r1n(v) { return v == null ? null : r1(v); }
 
 // ---------- camera scanning ----------
-const CAM = { stream: null, detector: null, zx: null, raf: 0, busy: false, torch: false };
+const CAM = { stream: null, detector: null, raf: 0, busy: false, torch: false, used: false, last: '', lastAt: 0 };
 async function startCamera() {
   stopCamera();
   const v = $('video'); if (!v) return;
-  const idle = $('idle'); if (idle) idle.innerHTML = '<div>Starting camera…</div>';
+  const idle = $('idle'); if (idle) idle.innerHTML = '<div class="small">Starting camera…</div>';
   try {
     CAM.stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: { ideal: 'environment' }, width: { ideal: 1280 }, height: { ideal: 720 } }, audio: false });
   } catch (e) {
     if (idle) idle.innerHTML = `<div>${e && e.name === 'NotAllowedError' ? 'Camera permission was blocked. Allow the camera for this site in your browser settings, then try again.' : 'Couldn’t open the camera.'}</div><button class="btn" data-act="startCam">Try again</button>`;
     return;
   }
+  CAM.used = true;
   v.srcObject = CAM.stream; v.setAttribute('playsinline', ''); v.muted = true;
   await v.play().catch(() => {});
+  if (!CAM.stream) return; // stopped while starting
   if (idle) idle.hidden = true;
   const track = CAM.stream.getVideoTracks()[0];
   const caps = track.getCapabilities ? track.getCapabilities() : {};
@@ -291,7 +350,7 @@ function loopDetect(v) {
     if (!CAM.stream) return;
     if (!CAM.busy && v.readyState >= 2) {
       CAM.busy = true;
-      try { const r = await CAM.detector.detect(v); const hit = r && r.find(x => /^\d{8,14}$/.test(x.rawValue)); if (hit) { onCode(hit.rawValue); CAM.busy = false; return; } } catch (e) {}
+      try { const r = await CAM.detector.detect(v); const hit = r && r.find(x => /^\d{8,14}$/.test(x.rawValue) && fresh(x.rawValue)); if (hit) { onCode(hit.rawValue); CAM.busy = false; return; } } catch (e) {}
       CAM.busy = false;
     }
     CAM.raf = setTimeout(tick, 120);
@@ -312,7 +371,7 @@ async function startZXing(v) {
       // decode the middle band, where the on-screen frame is
       const w = v.videoWidth, h = v.videoHeight, bh = Math.round(h * 0.5);
       c.width = w; c.height = bh; ctx.drawImage(v, 0, Math.round((h - bh) / 2), w, bh, 0, 0, w, bh);
-      try { const r = reader.decode(new Z.BinaryBitmap(new Z.HybridBinarizer(new Z.HTMLCanvasElementLuminanceSource(c)))); if (r && /^\d{8,14}$/.test(r.getText())) return onCode(r.getText()); } catch (e) {}
+      try { const r = reader.decode(new Z.BinaryBitmap(new Z.HybridBinarizer(new Z.HTMLCanvasElementLuminanceSource(c)))); if (r && /^\d{8,14}$/.test(r.getText()) && fresh(r.getText())) return onCode(r.getText()); } catch (e) {}
     }
     CAM.raf = setTimeout(tick, 150);
   };
@@ -330,7 +389,10 @@ async function toggleTorch() {
 }
 document.addEventListener('visibilitychange', () => { if (document.hidden) { stopCamera(); if (S.tab === 'scan') render(); } });
 
+// the same barcode is ignored for a few seconds after the camera reopens, so it isn't re-read while still in view
+function fresh(code) { return !(code === CAM.last && Date.now() - CAM.lastAt < 4000); }
 async function onCode(code) {
+  CAM.last = code;
   stopCamera();
   if (navigator.vibrate) navigator.vibrate(60);
   render();
@@ -340,7 +402,7 @@ async function findProduct(code) {
   code = String(code).replace(/\D/g, '');
   const hit = byBarcode(code);
   if (hit) return sheetProduct(hit, { isNew: false });
-  openSheet('Looking up ' + code, '<div class="msg">Checking Open Food Facts…</div>');
+  openSheet('Looking up', `<div class="small muted" style="margin-top:4px">${esc(code)}</div><div class="msg">Checking Open Food Facts…</div>`);
   let off = null, failed = false;
   try { off = await lookupOFF(code); } catch (e) { failed = true; }
   if (off && off.kcal != null) return sheetProduct(off, { isNew: true });
@@ -360,48 +422,61 @@ function openSheet(title, body, mount) {
   if (mount) mount($('sheetRoot').querySelector('.sheet'));
 }
 function closeSheet() { $('sheetRoot').innerHTML = ''; if (onClose) { const f = onClose; onClose = null; f(); } }
+// the person closed a sheet: go back to live scanning if the camera was in use
+function doneSheet() { closeSheet(); if (CAM.used && S.tab === 'scan' && !CAM.stream && !document.hidden) { CAM.lastAt = Date.now(); startCamera(); } }
 
-function nutrBlock(f, g) {
-  const k = (g || 100) / 100, v = x => (x == null ? '–' : r1(x * k));
-  return `<div class="nutr">
-    <div><b>${f.kcal == null ? '–' : Math.round(f.kcal * k)}</b><span>kcal</span></div>
-    <div><b style="color:var(--protein)">${v(f.protein)}</b><span>protein</span></div>
-    <div><b style="color:var(--carbs)">${v(f.carbs)}</b><span>carbs</span></div>
-    <div><b style="color:var(--fat)">${v(f.fat)}</b><span>fat</span></div></div>`;
-}
+function initials(name) { const w = String(name || '?').replace(/[^\p{L}\p{N} ]/gu, '').trim().split(/\s+/); return ((w[0] || '?')[0] + (w[1] ? w[1][0] : (w[0] || '')[1] || '')).toUpperCase(); }
 function sheetProduct(f, { isNew, entry } = {}) {
   const g0 = entry ? entry.grams : f.serving_g || 100;
-  const meal0 = entry ? entry.meal : defaultMeal();
-  const quick = f.serving_g ? [0.5, 1, 1.5, 2].map(x => [r1(f.serving_g * x), `${x} serving${x === 1 ? '' : 's'} · ${r1(f.serving_g * x)} g`]) : [50, 100, 150, 200, 250].map(x => [x, x + ' g']);
+  let meal = entry ? entry.meal : defaultMeal();
+  const quick = f.serving_g ? [0.5, 1, 2].map(x => [r1(f.serving_g * x), `${x === 0.5 ? '½' : x} serving${x > 1 ? 's' : ''} · ${r1(f.serving_g * x)} g`]) : [50, 100, 150, 200].map(x => [x, x + ' g']);
+  const fromOFF = /^Open Food Facts/.test(f.source || '');
   openSheet(f.name || 'Product', `
-    <div class="small muted" dir="auto">${esc(f.brand || '')}${f.barcode ? ` · ${esc(f.barcode)}` : ''}</div>
-    <span class="tag">${isNew ? 'New · from ' + esc(f.source) : 'In your catalogue'}</span>
-    ${isNew && f.source === 'Open Food Facts' ? '<div class="msg warn">Values come from Open Food Facts, entered by volunteers. Glance at the label and tap Edit if anything looks off.</div>' : ''}
-    <div id="prev"></div>
-    <label class="f">Amount, grams<input type="number" id="grams" inputmode="decimal" value="${g0}"></label>
-    <div class="quick">${quick.map(([g, t]) => `<button data-g="${g}">${t}</button>`).join('')}</div>
-    <label class="f">Meal<select id="meal">${MEALS.map(m => `<option${m === meal0 ? ' selected' : ''}>${m}</option>`).join('')}</select></label>
-    <button class="btn primary block" id="add">${entry ? 'Update' : 'Add to today'}</button>
-    <div class="row" style="margin-top:10px"><button class="btn" id="edit">Edit values</button>${entry ? '<button class="btn danger" id="rm">Remove</button>' : ''}</div>
-    <h2>Per 100 g</h2>
-    <div class="extra">
-      <span>Calories <b>${f.kcal ?? '–'}</b></span><span>Protein <b>${f.protein ?? '–'} g</b></span>
-      <span>Carbs <b>${f.carbs ?? '–'} g</b></span><span>Sugar <b>${f.sugar ?? '–'} g</b></span>
-      <span>Fat <b>${f.fat ?? '–'} g</b></span><span>Sat. fat <b>${f.sat_fat ?? '–'} g</b></span>
-      <span>Fibre <b>${f.fibre ?? '–'} g</b></span><span>Sodium <b>${f.sodium_mg ?? '–'} mg</b></span>
-    </div>`, el => {
-    const gi = el.querySelector('#grams'), prev = el.querySelector('#prev');
-    const upd = () => { prev.innerHTML = nutrBlock(f, num(gi.value) || 0); };
+    <div class="small muted" dir="auto" style="margin-top:4px">${esc(f.brand || '')}${f.brand && f.barcode ? ' · ' : ''}${esc(f.barcode || '')}</div>
+    <div style="margin-top:10px"><span class="pill${isNew ? ' new' : ''}">${isNew ? 'New · ' + esc(fromOFF ? 'Open Food Facts' : 'your label') : 'In your foods'}</span></div>
+    ${isNew && fromOFF ? '<div class="msg warn">Values come from Open Food Facts volunteers. Glance at the label and tap Edit values if anything looks off.</div>' : ''}
+    <div class="hero">
+      <div class="big"><b id="pK">0</b><span id="pG">kcal</span></div>
+      <div class="macros3">
+        <div><i style="background:var(--protein)"></i><b id="pP">0 g</b><span>Protein</span></div>
+        <div><i style="background:var(--carbs)"></i><b id="pC">0 g</b><span>Carbs</span></div>
+        <div><i style="background:var(--fat)"></i><b id="pF">0 g</b><span>Fat</span></div>
+      </div>
+    </div>
+    <label class="lbl" for="grams">Amount</label>
+    <div class="stepper"><button type="button" data-step="-5" aria-label="5 grams less">−</button><input type="number" id="grams" inputmode="decimal" min="0" step="any" value="${g0}" aria-label="Amount in grams"><span class="unit">g</span><button type="button" data-step="5" aria-label="5 grams more">+</button></div>
+    <div class="quick">${quick.map(([g, t]) => `<button type="button" data-g="${g}">${t}</button>`).join('')}</div>
+    <span class="lbl">Meal</span>
+    <div class="seg" role="group" aria-label="Meal">${MEALS.map(m => `<button type="button" data-meal="${m}" aria-pressed="${m === meal}">${m === 'Snacks' ? 'Snack' : m}</button>`).join('')}</div>
+    <button class="btn primary block" id="add" style="margin-top:20px"></button>
+    <div class="row" style="margin-top:4px"><button class="link" id="edit" style="flex:0 0 auto">Edit values</button><span></span>${entry ? '<button class="link" id="rm" style="flex:0 0 auto;color:var(--danger)">Remove</button>' : ''}</div>
+    <details style="margin-top:6px"><summary class="lbl" style="margin:8px 0">Per 100 g ›</summary>
+      <div class="per100">
+        <span>Calories <b>${f.kcal ?? '–'}</b></span><span>Protein <b>${f.protein ?? '–'} g</b></span>
+        <span>Carbs <b>${f.carbs ?? '–'} g</b></span><span>Sugar <b>${f.sugar ?? '–'} g</b></span>
+        <span>Fat <b>${f.fat ?? '–'} g</b></span><span>Sat. fat <b>${f.sat_fat ?? '–'} g</b></span>
+        <span>Fibre <b>${f.fibre ?? '–'} g</b></span><span>Sodium <b>${f.sodium_mg ?? '–'} mg</b></span>
+      </div></details>`, el => {
+    const gi = el.querySelector('#grams'), add = el.querySelector('#add');
+    const upd = () => {
+      const g = num(gi.value) || 0, k = g / 100, v = x => (x == null ? '–' : r1(x * k)) + ' g';
+      el.querySelector('#pK').textContent = f.kcal == null ? '–' : Math.round(f.kcal * k);
+      el.querySelector('#pG').textContent = `kcal in ${r1(g)} g`;
+      el.querySelector('#pP').textContent = v(f.protein); el.querySelector('#pC').textContent = v(f.carbs); el.querySelector('#pF').textContent = v(f.fat);
+      add.textContent = entry ? 'Update' : `Add to ${meal === 'Snacks' ? 'snacks' : meal.toLowerCase()}`;
+    };
     upd(); gi.oninput = upd;
     el.querySelectorAll('.quick button').forEach(b => b.onclick = () => { gi.value = b.dataset.g; upd(); });
-    el.querySelector('#add').onclick = () => {
+    el.querySelectorAll('[data-step]').forEach(b => b.onclick = () => { const g = Math.max(0, (num(gi.value) || 0) + Number(b.dataset.step)); gi.value = r1(g); upd(); });
+    el.querySelectorAll('.seg button').forEach(b => b.onclick = () => { meal = b.dataset.meal; el.querySelectorAll('.seg button').forEach(x => x.setAttribute('aria-pressed', String(x === b))); upd(); });
+    add.onclick = () => {
       const g = num(gi.value); if (!g || g <= 0) return gi.focus();
       if (isNew) putFood(f);
       const k = g / 100;
-      const rec = { id: entry ? entry.id : uid(), meal: el.querySelector('#meal').value, foodId: f.id, name: f.name, brand: f.brand || '', barcode: f.barcode || '', grams: r1(g), kcal: Math.round((f.kcal || 0) * k), p: r1((f.protein || 0) * k), c: r1((f.carbs || 0) * k), f: r1((f.fat || 0) * k), per100: { kcal: f.kcal || 0, p: f.protein || 0, c: f.carbs || 0, f: f.fat || 0 }, serving_g: f.serving_g || null, time: entry ? entry.time : new Date().toTimeString().slice(0, 5) };
+      const rec = { id: entry ? entry.id : uid(), meal, foodId: f.id, name: f.name, brand: f.brand || '', barcode: f.barcode || '', grams: r1(g), kcal: Math.round((f.kcal || 0) * k), p: r1((f.protein || 0) * k), c: r1((f.carbs || 0) * k), f: r1((f.fat || 0) * k), per100: { kcal: f.kcal || 0, p: f.protein || 0, c: f.carbs || 0, f: f.fat || 0 }, serving_g: f.serving_g || null, time: entry ? entry.time : new Date().toTimeString().slice(0, 5) };
       const day = entry ? S.days[entry.date] : today();
       const i = day.findIndex(x => x.id === rec.id); if (i >= 0) day[i] = Object.assign(rec, { date: entry.date }); else day.push(Object.assign(rec, { date: ymd() }));
-      saveDays(); closeSheet(); toast(entry ? 'Updated' : `Added ${rec.kcal} kcal to ${rec.meal}`); render();
+      saveDays(); doneSheet(); toast(entry ? 'Updated' : `Added ${rec.kcal} kcal to ${rec.meal === 'Snacks' ? 'snacks' : rec.meal.toLowerCase()}`); render();
     };
     el.querySelector('#edit').onclick = () => sheetEdit(f, { isNew, after: entry ? null : 'product' });
     const rm = el.querySelector('#rm');
@@ -461,45 +536,55 @@ function sheetSend() {
 }
 
 // ---------- views ----------
+function recentFoods() {
+  const seen = new Set(), out = [], all = foods();
+  for (const d of Object.keys(S.days).sort().reverse()) for (const e of S.days[d].slice().reverse()) {
+    if (seen.has(e.foodId)) continue; seen.add(e.foodId);
+    const f = all.find(x => x.id === e.foodId); if (f) out.push(f);
+    if (out.length >= 6) return out;
+  }
+  return out;
+}
+function foodRow(f) { return `<div class="item tap" data-act="food" data-id="${esc(f.id)}"><div class="av" dir="auto" aria-hidden="true">${esc(initials(f.name))}</div><div class="t"><div class="n" dir="auto">${esc(f.name)}</div><div class="s" dir="auto">${f.brand ? esc(f.brand) + ' · ' : ''}${f.kcal} kcal · P ${f.protein} per 100 g</div></div><svg class="plus" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg></div>`; }
 function viewScan() {
+  const recent = recentFoods();
   return `
     <div class="viewer">
       <video id="video" playsinline muted></video>
-      <div class="frame"></div>
-      <div class="idle" id="idle"><div>Point the camera at a barcode.</div><button class="btn primary" data-act="startCam">Start camera</button></div>
-      <button class="torch" id="torch" data-act="torch" hidden>Light</button>
+      <div class="corner tl"></div><div class="corner tr"></div><div class="corner bl"></div><div class="corner br"></div><div class="line"></div>
+      <div class="cap">Reading automatically</div>
+      <div class="idle" id="idle"><div class="small">Point the camera at a barcode</div><button class="btn primary" data-act="startCam">Start camera</button></div>
+      <button class="torch" id="torch" data-act="torch" aria-label="Torch" hidden><svg viewBox="0 0 24 24"><path d="M9 2h6l-1 7h-4z"/><path d="M10 9v11a2 2 0 0 0 4 0V9"/></svg></button>
     </div>
-    <div class="small muted" style="margin-top:8px">Hold the barcode inside the green box. It reads on its own, no need to tap.</div>
-    <h2>Or type the barcode</h2>
-    <div class="row"><input type="text" id="typed" inputmode="numeric" placeholder="7290000000000" aria-label="Barcode number"><button class="btn" data-act="typed" style="flex:0 0 auto">Look up</button></div>
-    <h2>No barcode? Search the catalogue</h2>
-    <input type="search" id="q" placeholder="Search foods, e.g. chicken" aria-label="Search the catalogue">
-    <div class="card list" id="results" hidden></div>`;
+    <label class="search"><input type="search" id="q" placeholder="Search foods or type a barcode" aria-label="Search foods or type a barcode" autocomplete="off"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg></label>
+    <div class="list" id="results" hidden></div>
+    <div id="recent">${recent.length ? `<h2>Recent</h2><div class="list">${recent.map(foodRow).join('')}</div>` : ''}</div>`;
 }
 function totals(items) { const t = { kcal: 0, p: 0, c: 0, f: 0 }; for (const e of items) { t.kcal += e.kcal || 0; t.p += e.p || 0; t.c += e.c || 0; t.f += e.f || 0; } return t; }
 function viewToday() {
   const d = ymd(), items = S.days[d] || [], t = totals(items), tr = !!S.train[d], T = tr ? S.targets.train : S.targets.rest;
-  const bar = (v, max) => `<div class="bar${v > max * 1.05 ? ' over' : ''}"><i style="width:${Math.min(100, max ? v / max * 100 : 0)}%"></i></div>`;
+  const left = Math.round(T.kcal - t.kcal), C = 2 * Math.PI * 70, frac = Math.min(1, T.kcal ? t.kcal / T.kcal : 0);
+  const mb = (label, v, target, color) => `<div><div class="r1"><span style="color:var(--text)">${label}</span><span>${Math.round(v)}${target ? ' / ' + target : ''} g</span></div><div class="bar"><i style="width:${Math.min(100, target ? v / target * 100 : v / 2)}%;background:var(${color})"></i></div></div>`;
   return `
-    <div class="seg" role="group" aria-label="Day type"><button data-act="dayType" data-v="0" aria-pressed="${!tr}">Rest day</button><button data-act="dayType" data-v="1" aria-pressed="${tr}">Training day</button></div>
-    <div class="card" style="margin-top:12px">
-      <div class="tot"><span>Calories</span><span><b>${Math.round(t.kcal)}</b> / ${T.kcal}</span></div>${bar(t.kcal, T.kcal)}
-      <div class="tot"><span>Protein</span><span><b>${Math.round(t.p)}</b> / ${T.p} g</span></div>${bar(t.p, T.p)}
-      <div class="small muted">Carbs ${Math.round(t.c)} g · Fat ${Math.round(t.f)} g</div>
+    <div class="card summary">
+      <div class="ring"><svg viewBox="0 0 160 160" aria-hidden="true"><circle cx="80" cy="80" r="70" fill="none" stroke="var(--line)" stroke-width="12"/><circle cx="80" cy="80" r="70" fill="none" stroke="${left < 0 ? 'var(--warn)' : 'var(--accent)'}" stroke-width="12" stroke-linecap="round" stroke-dasharray="${C.toFixed(1)}" stroke-dashoffset="${(C * (1 - frac)).toFixed(1)}"/></svg>
+        <div class="c"><b>${Math.abs(left).toLocaleString()}</b><span>${left < 0 ? 'kcal over' : 'kcal left'}</span></div></div>
+      <div class="mbars">${mb('Protein', t.p, T.p, '--protein')}${mb('Carbs', t.c, 0, '--carbs')}${mb('Fat', t.f, 0, '--fat')}</div>
     </div>
-    ${MEALS.map(m => { const es = items.filter(e => e.meal === m); return `<h2>${m}${es.length ? ` · ${Math.round(totals(es).kcal)} kcal` : ''}</h2>
-      <div class="card list">${es.map(e => `<div class="item tap" data-act="entry" data-id="${esc(e.id)}"><div class="t"><div class="n" dir="auto">${esc(e.name)}</div><div class="s">${e.grams} g · P ${r1(e.p)} · C ${r1(e.c)} · F ${r1(e.f)}</div></div><div class="k">${e.kcal}</div></div>`).join('') || '<div class="empty">Nothing yet</div>'}</div>`; }).join('')}
-    <button class="btn primary block" data-act="send" ${items.length ? '' : 'disabled'}>Send today to tracker</button>`;
+    <div class="small muted" style="text-align:center;margin:-4px 0 4px">${Math.round(t.kcal).toLocaleString()} eaten of ${T.kcal.toLocaleString()} kcal</div>
+    ${MEALS.map(m => { const es = items.filter(e => e.meal === m); return `<h2>${m}<span>${es.length ? Math.round(totals(es).kcal) + ' kcal' : ''}</span></h2>
+      <div class="list">${es.map(e => `<div class="item tap" data-act="entry" data-id="${esc(e.id)}"><div class="t"><div class="n" dir="auto">${esc(e.name)}</div><div class="s">${e.grams} g · P ${Math.round(e.p)}</div></div><div class="k">${e.kcal}</div></div>`).join('') || '<div class="empty">Nothing yet</div>'}</div>`; }).join('')}
+    <button class="btn block" data-act="send" style="margin-top:24px" ${items.length ? '' : 'disabled'}>Send today to tracker</button>`;
 }
 function viewCatalogue() {
   const list = foods().sort((a, b) => a.name.localeCompare(b.name));
   return `
     <div class="row"><input type="search" id="cq" placeholder="Search ${list.length} foods" aria-label="Search the catalogue"><button class="btn" data-act="newFood" style="flex:0 0 auto">+ New</button></div>
-    <div class="card list" id="catList" style="margin-top:12px">${list.map(f => catRow(f)).join('') || '<div class="empty">No foods yet.</div>'}</div>
+    <div class="list" id="catList" style="margin-top:8px">${list.map(f => catRow(f)).join('') || '<div class="empty">No foods yet.</div>'}</div>
     <button class="btn block" data-act="download">Download catalogue (CSV)</button>
     <p class="small muted">The catalogue is the file <a href="https://github.com/${REPO}/blob/main/${FILE}" target="_blank" rel="noopener">${FILE}</a> on GitHub. Every food you scan or add is saved there.</p>`;
 }
-function catRow(f) { return `<div class="item tap" data-act="food" data-id="${esc(f.id)}" data-s="${esc((f.name + ' ' + (f.brand || '') + ' ' + (f.barcode || '')).toLowerCase())}"><div class="t"><div class="n" dir="auto">${esc(f.name)}</div><div class="s" dir="auto">${esc(f.brand || '')}${f.brand ? ' · ' : ''}${f.kcal} kcal · P ${f.protein} per 100 g</div></div></div>`; }
+function catRow(f) { return `<div class="item tap" data-act="food" data-id="${esc(f.id)}" data-s="${esc((f.name + ' ' + (f.brand || '') + ' ' + (f.barcode || '')).toLowerCase())}"><div class="av" dir="auto" aria-hidden="true">${esc(initials(f.name))}</div><div class="t"><div class="n" dir="auto">${esc(f.name)}</div><div class="s" dir="auto">${esc(f.brand || '')}${f.brand ? ' · ' : ''}${f.kcal} kcal · P ${f.protein} per 100 g</div></div></div>`; }
 function viewSettings() {
   const n = S.pending.length;
   return `
@@ -534,18 +619,25 @@ function viewSettings() {
 function render() {
   if (S.tab !== 'scan') stopCamera();
   document.querySelectorAll('nav button').forEach(b => b.setAttribute('aria-selected', String(b.dataset.tab === S.tab)));
+  $('title').textContent = { scan: 'Scan', today: 'Today', catalogue: 'Foods', settings: 'Settings' }[S.tab];
   const v = $('view');
   v.innerHTML = S.tab === 'scan' ? viewScan() : S.tab === 'today' ? viewToday() : S.tab === 'catalogue' ? viewCatalogue() : viewSettings();
   setSync();
+  if (S.tab === 'today') {
+    const tr = !!S.train[ymd()], sy = $('sync');
+    sy.className = ''; sy.innerHTML = `<button class="daytype${tr ? ' on' : ''}" data-act="dayType" data-v="${tr ? 0 : 1}" aria-label="Switch to ${tr ? 'rest' : 'training'} day">${tr ? 'Training day' : 'Rest day'}</button>`;
+  }
   if (S.tab === 'scan') {
-    const q = $('q'), res = $('results');
+    const q = $('q'), res = $('results'), rec = $('recent');
     q.oninput = () => {
-      const s = q.value.trim().toLowerCase();
-      if (!s) { res.hidden = true; return; }
+      const s = q.value.trim().toLowerCase(), digits = s.replace(/\s/g, '');
+      if (!s) { res.hidden = true; rec.hidden = false; return; }
+      rec.hidden = true; res.hidden = false;
+      if (/^\d{8,14}$/.test(digits)) { res.innerHTML = `<div class="item tap" data-act="lookup" data-code="${digits}"><div class="av" aria-hidden="true">#</div><div class="t"><div class="n">Look up barcode</div><div class="s">${digits}</div></div></div>`; return; }
       const hits = foods().filter(f => (f.name + ' ' + (f.brand || '')).toLowerCase().includes(s)).slice(0, 20);
-      res.hidden = false; res.innerHTML = hits.map(catRow).join('') || '<div class="empty">No match. Add it in the Catalogue tab.</div>';
+      res.innerHTML = hits.map(foodRow).join('') || '<div class="empty">No match. Add it under Foods → New.</div>';
     };
-    $('typed').onkeydown = e => { if (e.key === 'Enter') document.querySelector('[data-act="typed"]').click(); };
+    q.onkeydown = e => { if (e.key === 'Enter') { const d = q.value.replace(/\D/g, ''); if (d.length >= 8 && d === q.value.trim()) { q.blur(); stopCamera(); findProduct(d); } } };
   }
   if (S.tab === 'catalogue') {
     const q = $('cq');
@@ -558,11 +650,11 @@ document.addEventListener('click', e => {
   const b = e.target.closest('[data-act], nav button'); if (!b) return;
   if (b.dataset.tab) { S.tab = b.dataset.tab; closeSheet(); render(); if (S.tab === 'scan') startCamera(); return; }
   const a = b.dataset.act;
-  if (a === 'bg') { if (e.target === b) closeSheet(); return; }
-  if (a === 'close') return closeSheet();
+  if (a === 'bg') { if (e.target === b) doneSheet(); return; }
+  if (a === 'close') return doneSheet();
   if (a === 'startCam') return startCamera();
   if (a === 'torch') return toggleTorch();
-  if (a === 'typed') { const v = $('typed').value.replace(/\D/g, ''); if (v.length < 8) return $('typed').focus(); stopCamera(); return findProduct(v); }
+  if (a === 'lookup') { stopCamera(); return findProduct(b.dataset.code); }
   if (a === 'food') { const f = foods().find(x => x.id === b.dataset.id); if (!f) return; return S.tab === 'catalogue' ? sheetEdit(f, { isNew: false, after: 'none' }) : sheetProduct(f, { isNew: false }); }
   if (a === 'newFood') return sheetEdit({ id: '', barcode: '', name: '', brand: '', source: 'label', added: ymd() }, { isNew: true, after: 'none' });
   if (a === 'entry') { const d = ymd(), en = (S.days[d] || []).find(x => x.id === b.dataset.id); if (!en) return; const f = foods().find(x => x.id === en.foodId) || { id: en.foodId, name: en.name, brand: en.brand, barcode: en.barcode, kcal: en.per100.kcal, protein: en.per100.p, carbs: en.per100.c, fat: en.per100.f, serving_g: en.serving_g, source: 'label' }; return sheetProduct(f, { isNew: false, entry: Object.assign({}, en, { date: d }) }); }
