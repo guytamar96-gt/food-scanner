@@ -1,51 +1,144 @@
 ﻿id,barcode,name,brand,kcal,protein,carbs,fat,sugar,sat_fat,fibre,sodium_mg,serving_g,source,added
-g-almonds,,Almonds,,579,21.2,21.6,49.9,4.4,3.8,12.5,1,15,generic (approx.),2026-10-24
-g-apple,,Apple,,52,0.3,13.8,0.2,10.4,0,2.4,1,180,generic (approx.),2026-10-24
-g-avocado,,Avocado,,160,2,8.5,14.7,0.7,2.1,6.7,7,50,generic (approx.),2026-10-24
-g-banana,,Banana (peeled),,89,1.1,22.8,0.3,12.2,0.1,2.6,1,120,generic (approx.),2026-10-24
-g-beef-shoulder,,"Beef shoulder, lean, cooked",,180,28,0,7,0,2.7,0,65,180,generic (approx.),2026-10-24
-g-blueberries,,Blueberries,,57,0.7,14.5,0.3,10,0,2.4,1,100,generic (approx.),2026-10-24
-g-broccoli,,Broccoli,,34,2.8,6.6,0.4,1.7,0,2.6,33,150,generic (approx.),2026-10-24
-g-rice-cakes,,Brown rice cakes,,387,8,81,2.8,0.9,0.6,4.2,30,9,generic (approx.),2026-10-24
-g-buckwheat,,"Buckwheat, cooked",,92,3.4,20,0.6,0.9,0.1,2.7,4,150,generic (approx.),2026-10-24
-g-bulgur,,"Bulgur, cooked",,83,3.1,18.6,0.2,0.1,0,4.5,5,200,generic (approx.),2026-10-24
-g-chicken-breast,,"Chicken breast, cooked",,165,31,0,3.6,0,1,0,74,200,generic (approx.),2026-10-24
-g-chicken-liver,,"Chicken liver, cooked",,167,24,0.9,6.5,0,2.1,0,76,200,generic (approx.),2026-10-24
-g-chicken-thigh,,"Chicken thigh, boneless skinless, cooked",,209,26,0,10.9,0,3,0,95,160,generic (approx.),2026-10-24
-g-chickpeas,,"Chickpeas, cooked",,164,8.9,27.4,2.6,4.8,0.3,7.6,7,170,generic (approx.),2026-10-24
-g-cottage-5,,Cottage cheese 5%,,97,11,2.5,5,2.5,3.2,0,380,250,generic (approx.),2026-10-24
-g-cucumber,,Cucumber,,15,0.7,3.6,0.1,1.7,0,0.5,2,100,generic (approx.),2026-10-24
-g-egg-white,,Egg white,,52,10.9,0.7,0.2,0.7,0,0,166,33,generic (approx.),2026-10-24
-g-egg,,"Egg, whole (size M)",,143,12.6,0.7,9.5,0.4,3.1,0,142,55,generic (approx.),2026-10-24
-g-tofu-firm,,Firm tofu,,144,15.8,2.8,8.7,0.6,1.3,2.3,14,250,generic (approx.),2026-10-24
-g-honey,,Honey,,304,0.3,82.4,0,82,0,0.2,4,7,generic (approx.),2026-10-24
-g-ketchup,,Ketchup,,101,1,27,0.1,22,0,0.3,907,15,generic (approx.),2026-10-24
-g-lentils,,"Lentils, cooked",,116,9,20,0.4,1.8,0.1,7.9,2,170,generic (approx.),2026-10-24
-g-dates-medjool,,Medjool date,,277,1.8,75,0.2,66,0,6.7,1,24,generic (approx.),2026-10-24
-g-peanut-butter,,Natural peanut butter,,588,25,20,50,9,10,6,17,16,generic (approx.),2026-10-24
-g-oats,,Oats,,379,13,67,6.5,1,1.1,10,6,50,generic (approx.),2026-10-24
-g-olive-oil,,Olive oil,,884,0,0,100,0,13.8,0,2,5,generic (approx.),2026-10-24
-g-pasta,,"Pasta, cooked",,158,5.8,31,0.9,0.6,0.2,1.8,1,130,generic (approx.),2026-10-24
-g-potato,,"Potato, raw",,77,2,17,0.1,0.8,0,2.2,6,220,generic (approx.),2026-10-24
-g-quinoa,,"Quinoa, cooked",,120,4.4,21.3,1.9,0.9,0.2,2.8,7,150,generic (approx.),2026-10-24
-g-tahini,,Raw tahini,,595,17,21.2,53.8,0.5,7.5,9.3,115,15,generic (approx.),2026-10-24
-g-salmon,,"Salmon, cooked",,206,22,0,12,0,2.5,0,61,160,generic (approx.),2026-10-24
-g-sirloin,,"Sirloin steak, cooked",,200,30,0,8,0,3,0,60,160,generic (approx.),2026-10-24
-g-sriracha,,Sriracha,,93,1.9,19,0.9,15,0.1,2.2,2000,15,generic (approx.),2026-10-24
-g-strawberries,,Strawberries,,32,0.7,7.7,0.3,4.9,0,2,1,150,generic (approx.),2026-10-24
-g-sweet-potato,,"Sweet potato, raw",,86,1.6,20,0.1,4.2,0,3,55,220,generic (approx.),2026-10-24
-g-tilapia,,"Tilapia, cooked",,128,26,0,2.7,0,0.9,0,56,250,generic (approx.),2026-10-24
-g-tomato,,Tomato,,18,0.9,3.9,0.2,2.6,0,1.2,5,120,generic (approx.),2026-10-24
-g-tuna-water,,"Tuna in water, drained",,116,26,0,1,0,0.3,0,300,120,generic (approx.),2026-10-24
-g-turkey-pastrami,,Turkey breast pastrami (up to 3% fat),,105,19,3,2,1.5,0.6,0,900,30,generic (approx.),2026-10-24
-g-turkey-breast,,"Turkey breast, cooked",,147,30,0,2.1,0,0.6,0,64,200,generic (approx.),2026-10-24
-g-walnuts,,Walnuts,,654,15.2,13.7,65.2,2.6,6.1,6.7,2,15,generic (approx.),2026-10-24
-g-whey,,"Whey protein powder (generic, scan yours)",,400,80,7,6,5,3,0,300,30,generic (approx.),2026-10-24
-g-white-cheese-5,,White cheese 5%,,94,9,3.4,5,3.4,3.2,0,50,150,generic (approx.),2026-10-24
-g-rice-white,,"White rice, cooked",,130,2.7,28,0.3,0.1,0.1,0.4,1,150,generic (approx.),2026-10-24
-g-wholewheat-bread,,Wholewheat bread,,247,13,41,3.4,6,0.7,7,450,30,generic (approx.),2026-10-24
-g-yellow-cheese-9,,Yellow cheese 9%,,255,31,0.5,9,0,5.5,0,600,20,generic (approx.),2026-10-24
+g-avocado,,אבוקדו,Avocado,160,2,8.5,14.7,0.7,2.1,6.7,7,50,generic (approx.),2026-10-24
+g-whey,,"אבקת חלבון (כללי, עדיף לסרוק)","Whey protein powder (generic, scan yours)",400,80,7,6,5,3,0,300,30,generic (approx.),2026-10-24
+g-walnuts,,אגוזי מלך,Walnuts,654,15.2,13.7,65.2,2.6,6.1,6.7,2,15,generic (approx.),2026-10-24
+g-blueberries,,אוכמניות,Blueberries,57,0.7,14.5,0.3,10,0,2.4,1,100,generic (approx.),2026-10-24
+g-rice-white,,אורז לבן מבושל,"White rice, cooked",130,2.7,28,0.3,0.1,0.1,0.4,1,150,generic (approx.),2026-10-24
+g-tilapia,,אמנון (טילפיה) מבושל,"Tilapia, cooked",128,26,0,2.7,0,0.9,0,56,250,generic (approx.),2026-10-24
+g-bulgur,,בורגול מבושל,"Bulgur, cooked",83,3.1,18.6,0.2,0.1,0,4.5,5,200,generic (approx.),2026-10-24
+g-sweet-potato,,בטטה (חיה),"Sweet potato, raw",86,1.6,20,0.1,4.2,0,3,55,220,generic (approx.),2026-10-24
+g-egg,,ביצה (M),"Egg, whole (size M)",143,12.6,0.7,9.5,0.4,3.1,0,142,55,generic (approx.),2026-10-24
+g-banana,,בננה (קלופה),Banana (peeled),89,1.1,22.8,0.3,12.2,0.1,2.6,1,120,generic (approx.),2026-10-24
+g-broccoli,,ברוקולי,Broccoli,34,2.8,6.6,0.4,1.7,0,2.6,33,150,generic (approx.),2026-10-24
+g-white-cheese-5,,גבינה לבנה 5%,White cheese 5%,94,9,3.4,5,3.4,3.2,0,50,150,generic (approx.),2026-10-24
+g-yellow-cheese-9,,גבינה צהובה 9%,Yellow cheese 9%,255,31,0.5,9,0,5.5,0,600,20,generic (approx.),2026-10-24
+g-chickpeas,,גרגרי חומוס מבושלים,"Chickpeas, cooked",164,8.9,27.4,2.6,4.8,0.3,7.6,7,170,generic (approx.),2026-10-24
+g-honey,,דבש,Honey,304,0.3,82.4,0,82,0,0.2,4,7,generic (approx.),2026-10-24
+g-turkey-breast,,חזה הודו מבושל,"Turkey breast, cooked",147,30,0,2.1,0,0.6,0,64,200,generic (approx.),2026-10-24
+g-chicken-breast,,חזה עוף מבושל,"Chicken breast, cooked",165,31,0,3.6,0,1,0,74,200,generic (approx.),2026-10-24
+g-egg-white,,חלבון ביצה,Egg white,52,10.9,0.7,0.2,0.7,0,0,166,33,generic (approx.),2026-10-24
+g-peanut-butter,,חמאת בוטנים טבעית,Natural peanut butter,588,25,20,50,9,10,6,17,16,generic (approx.),2026-10-24
+g-tuna-water,,"טונה במים, מסוננת","Tuna in water, drained",116,26,0,1,0,0.3,0,300,120,generic (approx.),2026-10-24
+g-tofu-firm,,טופו קשה,Firm tofu,144,15.8,2.8,8.7,0.6,1.3,2.3,14,250,generic (approx.),2026-10-24
+g-tahini,,טחינה גולמית,Raw tahini,595,17,21.2,53.8,0.5,7.5,9.3,115,15,generic (approx.),2026-10-24
+g-chicken-liver,,כבד עוף מבושל,"Chicken liver, cooked",167,24,0.9,6.5,0,2.1,0,76,200,generic (approx.),2026-10-24
+g-buckwheat,,כוסמת מבושלת,"Buckwheat, cooked",92,3.4,20,0.6,0.9,0.1,2.7,4,150,generic (approx.),2026-10-24
+g-beef-shoulder,,"כתף בקר רזה, מבושלת","Beef shoulder, lean, cooked",180,28,0,7,0,2.7,0,65,180,generic (approx.),2026-10-24
+g-wholewheat-bread,,לחם מלא,Wholewheat bread,247,13,41,3.4,6,0.7,7,450,30,generic (approx.),2026-10-24
+g-cucumber,,מלפפון,Cucumber,15,0.7,3.6,0.1,1.7,0,0.5,2,100,generic (approx.),2026-10-24
+g-sirloin,,סטייק סינטה מבושל,"Sirloin steak, cooked",200,30,0,8,0,3,0,60,160,generic (approx.),2026-10-24
+g-salmon,,סלמון מבושל,"Salmon, cooked",206,22,0,12,0,2.5,0,61,160,generic (approx.),2026-10-24
+g-sriracha,,סרירצ'ה,Sriracha,93,1.9,19,0.9,15,0.1,2.2,2000,15,generic (approx.),2026-10-24
+g-tomato,,עגבנייה,Tomato,18,0.9,3.9,0.2,2.6,0,1.2,5,120,generic (approx.),2026-10-24
+g-lentils,,עדשים מבושלות,"Lentils, cooked",116,9,20,0.4,1.8,0.1,7.9,2,170,generic (approx.),2026-10-24
+g-pasta,,פסטה מבושלת,"Pasta, cooked",158,5.8,31,0.9,0.6,0.2,1.8,1,130,generic (approx.),2026-10-24
+g-turkey-pastrami,,פסטרמה הודו (עד 3% שומן),Turkey breast pastrami (up to 3% fat),105,19,3,2,1.5,0.6,0,900,30,generic (approx.),2026-10-24
+g-chicken-thigh,,פרגית מבושלת,"Chicken thigh, boneless skinless, cooked",209,26,0,10.9,0,3,0,95,160,generic (approx.),2026-10-24
+g-rice-cakes,,פריכיות אורז מלא,Brown rice cakes,387,8,81,2.8,0.9,0.6,4.2,30,9,generic (approx.),2026-10-24
+g-cottage-5,,קוטג' 5%,Cottage cheese 5%,97,11,2.5,5,2.5,3.2,0,380,250,generic (approx.),2026-10-24
+g-ketchup,,קטשופ,Ketchup,101,1,27,0.1,22,0,0.3,907,15,generic (approx.),2026-10-24
+g-quinoa,,קינואה מבושלת,"Quinoa, cooked",120,4.4,21.3,1.9,0.9,0.2,2.8,7,150,generic (approx.),2026-10-24
+g-oats,,שיבולת שועל,Oats,379,13,67,6.5,1,1.1,10,6,50,generic (approx.),2026-10-24
+g-olive-oil,,שמן זית,Olive oil,884,0,0,100,0,13.8,0,2,5,generic (approx.),2026-10-24
+g-almonds,,שקדים,Almonds,579,21.2,21.6,49.9,4.4,3.8,12.5,1,15,generic (approx.),2026-10-24
+g-strawberries,,תותים,Strawberries,32,0.7,7.7,0.3,4.9,0,2,1,150,generic (approx.),2026-10-24
+g-dates-medjool,,תמר מג'הול,Medjool date,277,1.8,75,0.2,66,0,6.7,1,24,generic (approx.),2026-10-24
+g-potato,,תפוח אדמה (חי),"Potato, raw",77,2,17,0.1,0.8,0,2.2,6,220,generic (approx.),2026-10-24
+g-apple,,תפוח עץ,Apple,52,0.3,13.8,0.2,10.4,0,2.4,1,180,generic (approx.),2026-10-24
+g-watermelon,,אבטיח,Watermelon,30,0.6,7.6,0.2,6.2,0,0.4,1,300,generic (approx.),2026-10-25
+g-pear,,אגס,Pear,57,0.4,15.2,0.1,9.8,0,3.1,1,170,generic (approx.),2026-10-25
+g-edamame,,אדממה,Edamame,121,11.9,8.9,5.2,2.2,0.6,5.2,6,100,generic (approx.),2026-10-25
+g-rice-brown,,אורז מלא מבושל,"Brown rice, cooked",123,2.7,25.6,1,0.2,0.3,1.6,4,150,generic (approx.),2026-10-25
+g-pineapple,,אננס,Pineapple,50,0.5,13.1,0.1,9.9,0,1.4,1,150,generic (approx.),2026-10-25
+g-peas,,אפונה ירוקה,Green peas,81,5.4,14.5,0.4,5.7,0.1,5.1,5,80,generic (approx.),2026-10-25
+g-persimmon,,אפרסמון,Persimmon,70,0.6,18.6,0.2,12.5,0,3.6,1,170,generic (approx.),2026-10-25
+g-peach,,אפרסק,Peach,39,0.9,9.5,0.3,8.4,0,1.5,0,150,generic (approx.),2026-10-25
+g-grapefruit,,אשכולית,Grapefruit,42,0.8,10.7,0.1,6.9,0,1.6,0,250,generic (approx.),2026-10-25
+g-peanuts,,בוטנים,Peanuts,567,25.8,16.1,49.2,4,6.3,8.5,18,15,generic (approx.),2026-10-25
+g-onion,,בצל,Onion,40,1.1,9.3,0.1,4.2,0,1.7,4,110,generic (approx.),2026-10-25
+g-green-onion,,בצל ירוק,Spring onion,32,1.8,7.3,0.2,2.3,0,2.6,16,15,generic (approx.),2026-10-25
+g-red-onion,,בצל סגול,Red onion,40,1.1,9.3,0.1,4.2,0,1.7,4,110,generic (approx.),2026-10-25
+g-ground-beef,,"בקר טחון 15%, מבושל","Ground beef 15%, cooked",250,26,0,15.4,0,6,0,72,150,generic (approx.),2026-10-25
 200000044732,200000044732,גבינה לבנה 5%,תנובה,98,9,4.3,5,,,,,,label,2026-10-25
 020400122348,020400122348,גבינה צהובה 9%,עמק,201,30,0,9,,,,,,label,2026-10-25
+g-feta,,גבינת פטה,Feta cheese,264,14.2,3.9,21.3,0,14.9,0,1116,30,generic (approx.),2026-10-25
+g-guava,,גויאבה,Guava,68,2.6,14.3,1,8.9,0.3,5.4,2,100,generic (approx.),2026-10-25
+g-carrot,,גזר,Carrot,41,0.9,9.6,0.2,4.7,0,2.8,69,80,generic (approx.),2026-10-25
+g-granola,,גרנולה,Granola,471,10,64,20,24,3.8,5,26,40,generic (approx.),2026-10-25
+g-sunflower-seeds,,גרעיני חמנייה (קלופים),"Sunflower seeds, shelled",584,20.8,20,51.5,2.6,4.5,8.6,9,15,generic (approx.),2026-10-25
+g-cherries,,דובדבנים,Cherries,63,1.1,16,0.2,12.8,0,2.1,0,100,generic (approx.),2026-10-25
+g-pumpkin,,דלעת,Pumpkin,26,1,6.5,0.1,2.8,0,0.5,1,150,generic (approx.),2026-10-25
+g-ground-turkey,,"הודו טחון, מבושל","Ground turkey, cooked",203,27.4,0,10.4,0,2.7,0,78,150,generic (approx.),2026-10-25
+g-olives,,זיתים,Olives,115,0.8,6.3,10.7,0,1.4,3.2,735,15,generic (approx.),2026-10-25
+g-flax,,זרעי פשתן,Flaxseed,534,18.3,28.9,42.2,1.6,3.7,27.3,30,10,generic (approx.),2026-10-25
+g-hummus,,חומוס (ממרח),Hummus spread,166,7.9,14.3,9.6,0.3,1.4,6,379,50,generic (approx.),2026-10-25
+g-milk-1,,חלב 1%,Milk 1%,42,3.4,5,1,5,0.6,0,44,250,generic (approx.),2026-10-25
+g-milk-3,,חלב 3%,Milk 3%,60,3.2,4.7,3,4.7,1.9,0,44,250,generic (approx.),2026-10-25
+g-butter,,חמאה,Butter,717,0.9,0.1,81,0.1,51,0,11,10,generic (approx.),2026-10-25
+g-lettuce,,חסה,Lettuce,15,1.4,2.9,0.2,0.8,0,1.3,28,50,generic (approx.),2026-10-25
+g-eggplant,,חציל,Eggplant,25,1,5.9,0.2,3.5,0,3,2,300,generic (approx.),2026-10-25
+g-mustard,,חרדל,Mustard,60,3.7,5.8,3.3,0.9,0.2,4,1104,10,generic (approx.),2026-10-25
+g-tuna-oil,,"טונה בשמן, מסוננת","Tuna in oil, drained",198,29,0,8.2,0,1.5,0,354,120,generic (approx.),2026-10-25
+g-tortilla,,טורטייה,Flour tortilla,304,8.2,50,8,3,3,3.5,600,60,generic (approx.),2026-10-25
+g-yogurt-3,,יוגורט טבעי 3%,Plain yogurt 3%,61,3.5,4.7,3.3,4.7,2.1,0,46,200,generic (approx.),2026-10-25
+g-greek-0,,יוגורט יווני 0%,Greek yogurt 0%,59,10.2,3.6,0.4,3.2,0.1,0,36,150,generic (approx.),2026-10-25
+g-cabbage,,כרוב לבן,White cabbage,25,1.3,5.8,0.1,3.2,0,2.5,18,100,generic (approx.),2026-10-25
+g-red-cabbage,,כרוב סגול,Red cabbage,31,1.4,7.4,0.2,3.8,0,2.1,27,100,generic (approx.),2026-10-25
+g-cauliflower,,כרובית,Cauliflower,25,1.9,5,0.3,1.9,0.1,2,30,150,generic (approx.),2026-10-25
+g-sea-bass,,"לברק / דניס, מבושל","Sea bass or sea bream, cooked",124,23.6,0,2.6,0,0.7,0,87,250,generic (approx.),2026-10-25
+g-white-bread,,לחם לבן,White bread,266,8.9,49,3.3,5.7,0.7,2.7,490,30,generic (approx.),2026-10-25
 7290018581018,7290018581018,לחם קלשיפון,Taubread,201,14.4,26.7,1.7,1,,10,367,18,Open Food Facts,2026-10-25
+g-lemon,,לימון,Lemon,29,1.1,9.3,0.3,2.5,0,2.8,2,60,generic (approx.),2026-10-25
+g-mozzarella,,מוצרלה (חצי שמנה),"Mozzarella, part-skim",254,24.3,2.8,15.9,1.1,10.1,0,619,30,generic (approx.),2026-10-25
+g-mayo,,מיונז,Mayonnaise,680,1,0.6,75,0.6,11.7,0,635,15,generic (approx.),2026-10-25
+g-orange-juice,,מיץ תפוזים,Orange juice,45,0.7,10.4,0.2,8.4,0,0.2,1,250,generic (approx.),2026-10-25
+g-melon,,מלון,Melon,34,0.8,8.2,0.2,7.9,0.1,0.9,16,200,generic (approx.),2026-10-25
+g-pickles,,מלפפון חמוץ,Pickled cucumber,12,0.3,2.3,0.2,1.1,0,1,800,40,generic (approx.),2026-10-25
+g-mango,,מנגו,Mango,60,0.8,15,0.4,13.7,0.1,1.6,1,200,generic (approx.),2026-10-25
+g-apricot,,משמש,Apricot,48,1.4,11.1,0.4,9.2,0,2,1,35,generic (approx.),2026-10-25
 290410072661,290410072661,משקב חלבון פרו שוקולד,יטבתה,40,7.2,2.1,0,,,,,,label,2026-10-25
+g-nectarine,,נקטרינה,Nectarine,44,1.1,10.6,0.3,7.9,0,1.7,0,140,generic (approx.),2026-10-25
+g-sugar,,סוכר,Sugar,387,0,100,0,100,0,0,1,5,generic (approx.),2026-10-25
+g-silan,,סילאן,Date syrup (silan),300,1,75,0,70,0,1,10,10,generic (approx.),2026-10-25
+g-beet,,סלק,Beetroot,43,1.6,9.6,0.2,6.8,0,2.8,78,100,generic (approx.),2026-10-25
+g-celery,,סלרי,Celery,16,0.7,3,0.2,1.3,0,1.6,80,40,generic (approx.),2026-10-25
+g-sardines,,סרדינים בשמן,Sardines in oil,208,24.6,0,11.5,0,1.5,0,307,90,generic (approx.),2026-10-25
+g-cherry-tomato,,עגבניות שרי,Cherry tomatoes,18,0.9,3.9,0.2,2.6,0,1.2,5,100,generic (approx.),2026-10-25
+g-grapes,,ענבים,Grapes,69,0.7,18.1,0.2,15.5,0.1,0.9,2,100,generic (approx.),2026-10-25
+g-popcorn,,פופקורן (בלי שמן),"Popcorn, air-popped",387,12.9,77.8,4.5,0.9,0.6,14.5,8,25,generic (approx.),2026-10-25
+g-mushrooms,,פטריות,Mushrooms,22,3.1,3.3,0.3,2,0,1,5,100,generic (approx.),2026-10-25
+g-pistachios,,פיסטוקים,Pistachios,560,20.2,27.2,45.3,7.7,5.9,10.6,1,15,generic (approx.),2026-10-25
+g-pita,,פיתה,"Pita, white",275,9.1,55.7,1.2,1.3,0.2,2.2,536,90,generic (approx.),2026-10-25
+g-pita-ww,,פיתה מקמח מלא,"Pita, wholewheat",266,9.8,55,2.6,0.8,0.4,7.4,527,70,generic (approx.),2026-10-25
+g-falafel,,פלאפל,Falafel,333,13.3,31.8,17.8,0,2.4,0,294,17,generic (approx.),2026-10-25
+g-pepper-red,,פלפל אדום,Red bell pepper,31,1,6,0.3,4.2,0,2.1,4,150,generic (approx.),2026-10-25
+g-chili,,פלפל חריף,Chili pepper,40,1.9,8.8,0.4,5.3,0,1.5,9,15,generic (approx.),2026-10-25
+g-pepper-green,,פלפל ירוק,Green bell pepper,20,0.9,4.6,0.2,2.4,0,1.7,3,150,generic (approx.),2026-10-25
+g-pepper-yellow,,פלפל צהוב,Yellow bell pepper,27,1,6.3,0.2,4,0,0.9,2,150,generic (approx.),2026-10-25
+g-parmesan,,פרמזן,Parmesan,392,35.8,3.2,25.8,0.8,16.4,0,1529,10,generic (approx.),2026-10-25
+g-ptitim,,פתיתים מבושלים,"Ptitim, cooked",150,5,30,0.8,0.5,0.2,1.2,2,150,generic (approx.),2026-10-25
+g-chia,,צ'יה,Chia seeds,486,16.5,42.1,30.7,0,3.3,34.4,16,10,generic (approx.),2026-10-25
+g-raisins,,צימוקים,Raisins,299,3.1,79.2,0.5,59.2,0.1,3.7,11,30,generic (approx.),2026-10-25
+g-radish,,צנון,Radish,16,0.7,3.4,0.1,1.9,0,1.6,39,50,generic (approx.),2026-10-25
+g-kohlrabi,,קולרבי,Kohlrabi,27,1.7,6.2,0.1,2.6,0,3.6,20,100,generic (approx.),2026-10-25
+g-couscous,,קוסקוס מבושל,"Couscous, cooked",112,3.8,23.2,0.2,0.1,0,1.4,5,150,generic (approx.),2026-10-25
+g-cornflakes,,קורנפלקס,Cornflakes,357,7.5,84,0.4,9.5,0.1,3.3,729,30,generic (approx.),2026-10-25
+g-kiwi,,קיווי,Kiwi,61,1.1,14.7,0.5,9,0,3,3,75,generic (approx.),2026-10-25
+g-zucchini,,קישוא,Zucchini,17,1.2,3.1,0.3,2.5,0.1,1,8,200,generic (approx.),2026-10-25
+g-clementine,,קלמנטינה,Clementine,53,0.8,13.3,0.3,10.6,0,1.8,2,75,generic (approx.),2026-10-25
+g-cashews,,קשיו,Cashews,553,18.2,30.2,43.9,5.9,7.8,3.3,12,15,generic (approx.),2026-10-25
+g-soy-sauce,,רוטב סויה,Soy sauce,53,8.1,4.9,0.6,0.4,0.1,0.8,5493,15,generic (approx.),2026-10-25
+g-pomegranate,,רימון (גרגרים),Pomegranate seeds,83,1.7,18.7,1.2,13.7,0.1,4,3,90,generic (approx.),2026-10-25
+g-tomato-paste,,רסק עגבניות,Tomato paste,82,4.3,18.9,0.5,12.2,0.1,4.1,59,15,generic (approx.),2026-10-25
+g-garlic,,שום,Garlic,149,6.4,33,0.5,1,0.1,2.1,17,3,generic (approx.),2026-10-25
+g-dark-chocolate,,שוקולד מריר 70%,Dark chocolate 70%,598,7.8,45.9,42.6,24,24.5,10.9,20,10,generic (approx.),2026-10-25
+g-plum,,שזיף,Plum,46,0.7,11.4,0.3,9.9,0,1.4,0,65,generic (approx.),2026-10-25
+g-schnitzel,,שניצל עוף מטוגן,"Chicken schnitzel, fried",260,22,12,14,0.5,2,0.6,350,120,generic (approx.),2026-10-25
+g-green-beans,,שעועית ירוקה,Green beans,31,1.8,7,0.2,3.3,0,2.7,6,100,generic (approx.),2026-10-25
+g-white-beans,,שעועית לבנה מבושלת,"White beans, cooked",139,9.7,25,0.4,0.3,0.1,6.3,6,170,generic (approx.),2026-10-25
+g-black-beans,,שעועית שחורה מבושלת,"Black beans, cooked",132,8.9,23.7,0.5,0.3,0.1,8.7,1,170,generic (approx.),2026-10-25
+g-shrimp,,שרימפס מבושל,"Shrimp, cooked",99,24,0.2,0.3,0,0.1,0,111,100,generic (approx.),2026-10-25
+g-figs,,תאנה,Fig,74,0.8,19.2,0.3,16.3,0.1,2.9,1,50,generic (approx.),2026-10-25
+g-corn,,תירס (גרעינים),Sweet corn kernels,96,3.4,21,1.5,4.5,0.2,2.4,1,100,generic (approx.),2026-10-25
+g-orange,,תפוז,Orange,47,0.9,11.8,0.1,9.4,0,2.4,0,150,generic (approx.),2026-10-25
+g-spinach,,תרד,Spinach,23,2.9,3.6,0.4,0.4,0.1,2.2,79,30,generic (approx.),2026-10-25
