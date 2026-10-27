@@ -367,6 +367,36 @@ function load(k, d) { try { const v = JSON.parse(localStorage.getItem(k)); retur
 function save(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch (e) {} }
 function clone(o) { return JSON.parse(JSON.stringify(o)); }
 function toast(t) { const el = document.createElement('div'); el.className = 'toast'; el.textContent = t; document.body.appendChild(el); setTimeout(() => el.remove(), 2400); }
+
+// water goal confetti: lime, blue, purple, about 1.6 s; reduced motion gets the message only
+function confetti() {
+  if (matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+  const cv = document.createElement('canvas'); cv.setAttribute('aria-hidden', 'true');
+  cv.style.cssText = 'position:fixed;inset:0;width:100%;height:100%;pointer-events:none;z-index:40';
+  document.body.appendChild(cv);
+  const cx = cv.getContext('2d'), dpr = Math.min(2, devicePixelRatio || 1), W = innerWidth, H = innerHeight;
+  cv.width = W * dpr; cv.height = H * dpr; cx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  const cols = ['#C8F135', '#60A5FA', '#A78BFA', '#F4F4F5'], ps = [];
+  for (let i = 0; i < 300; i++) {
+    const left = i % 2 === 0, a = -0.95 - Math.random() * 0.5, v = 8 + Math.random() * 12;
+    ps.push({ x: left ? 0 : W, y: H * 0.72, vx: Math.abs(Math.cos(a) * v) * (left ? 1 : -1), vy: Math.sin(a) * v, w: 6 + Math.random() * 5, h: 9 + Math.random() * 7, r: Math.random() * 6, vr: (Math.random() - 0.5) * 0.4, c: cols[i % cols.length], round: Math.random() < 0.25 });
+  }
+  const t0 = performance.now(), dur = 1600;
+  (function frame(t) {
+    const k = (t - t0) / dur;
+    cx.clearRect(0, 0, W, H);
+    if (k >= 1) return cv.remove();
+    cx.globalAlpha = k < 0.7 ? 1 : 1 - (k - 0.7) / 0.3;
+    for (const p of ps) {
+      p.vy += 0.35; p.vx *= 0.985; p.vy *= 0.985; p.x += p.vx; p.y += p.vy; p.r += p.vr;
+      const sq = Math.abs(Math.cos(p.r * 2));
+      cx.save(); cx.translate(p.x, p.y); cx.rotate(p.r); cx.fillStyle = p.c;
+      if (p.round) { cx.beginPath(); cx.arc(0, 0, p.w / 2, 0, 7); cx.fill(); } else cx.fillRect(-p.w / 2, -p.h / 2 * sq, p.w, p.h * sq + 1);
+      cx.restore();
+    }
+    requestAnimationFrame(frame);
+  })(t0);
+}
 function utf8ToB64(s) { const b = new TextEncoder().encode(s); let bin = ''; for (let i = 0; i < b.length; i += 0x8000) bin += String.fromCharCode.apply(null, b.subarray(i, i + 0x8000)); return btoa(bin); }
 function b64ToUtf8(s) { const bin = atob(s.replace(/\s/g, '')); const b = new Uint8Array(bin.length); for (let i = 0; i < bin.length; i++) b[i] = bin.charCodeAt(i); return new TextDecoder().decode(b); }
 function defaultMeal() { const h = new Date().getHours(); return h < 11 ? 'Breakfast' : h < 16 ? 'Lunch' : h < 18 ? 'Snacks' : 'Dinner'; }
@@ -441,6 +471,17 @@ function day(date = S.date) { return S.log.days[date] ? S.log.days[date] : blank
 function editDay(date, fn) {
   const d = clone(day(date)); fn(d); d.updatedAt = new Date().toISOString();
   S.log.days[date] = d; markDirty('days/' + date + '.json');
+}
+// change today's water; returns true when this edit crosses the goal for the first time that day
+function editWater(date, fn) {
+  const goal = targetsFor(date).water, before = day(date).water_ml || 0;
+  editDay(date, fn);
+  const after = day(date).water_ml || 0;
+  let seen = null; try { seen = localStorage.getItem('fs-confetti'); } catch (e) {}
+  if (!goal || before >= goal || after < goal || seen === date) return false;
+  try { localStorage.setItem('fs-confetti', date); } catch (e) {}
+  document.querySelectorAll('.toast').forEach(e => e.remove()); confetti(); toast('Water goal hit! 💧');
+  return true;
 }
 function isTrain(d) { return d.train === true || (d.train !== false && d.workouts.length > 0); }
 function totals(items) { const t = { kcal: 0, p: 0, c: 0, f: 0 }; for (const e of items) { t.kcal += e.kcal || 0; t.p += e.p || 0; t.c += e.c || 0; t.f += e.f || 0; } return t; }
@@ -910,8 +951,8 @@ function sheetWater() {
   openSheet('Water', `
     <label class="f">Add any amount, ml<input type="number" id="wA" inputmode="numeric" placeholder="330"></label><button class="btn primary block" id="wAB">Add</button>
     <label class="f" style="margin-top:22px">Or correct the day’s total, ml<input type="number" id="wT" inputmode="numeric" value="${d.water_ml || 0}"></label><button class="btn block" id="wTB">Set total</button>`, el => {
-    el.querySelector('#wAB').onclick = () => { const n = num($('wA').value); if (!n || n <= 0) return $('wA').focus(); editDay(S.date, x => { x.water_ml = (x.water_ml || 0) + Math.round(n); }); closeSheet(); toast(`+${Math.round(n)} ml`); };
-    el.querySelector('#wTB').onclick = () => { const n = num($('wT').value); if (n == null || n < 0) return $('wT').focus(); editDay(S.date, x => { x.water_ml = Math.round(n); }); closeSheet(); };
+    el.querySelector('#wAB').onclick = () => { const n = num($('wA').value); if (!n || n <= 0) return $('wA').focus(); closeSheet(); if (!editWater(S.date, x => { x.water_ml = (x.water_ml || 0) + Math.round(n); })) toast(`+${Math.round(n)} ml`); };
+    el.querySelector('#wTB').onclick = () => { const n = num($('wT').value); if (n == null || n < 0) return $('wT').focus(); closeSheet(); editWater(S.date, x => { x.water_ml = Math.round(n); }); };
   });
 }
 function sheetCheckin() {
@@ -1574,7 +1615,7 @@ document.addEventListener('click', e => {
   }
   if (a === 'saveMeal') return sheetSaveMeal(b.dataset.meal);
   if (a === 'template') return sheetTemplate(b.dataset.id);
-  if (a === 'water') { const ml = Number(b.dataset.ml); editDay(S.date, x => { x.water_ml = (x.water_ml || 0) + ml; }); return toast(`+${ml} ml`); }
+  if (a === 'water') { const ml = Number(b.dataset.ml); if (!editWater(S.date, x => { x.water_ml = (x.water_ml || 0) + ml; })) toast(`+${ml} ml`); return; }
   if (a === 'waterSheet') return sheetWater();
   if (a === 'checkin') return sheetCheckin();
   if (a === 'dayType') return editDay(S.date, x => { x.train = b.dataset.v === '1'; });
