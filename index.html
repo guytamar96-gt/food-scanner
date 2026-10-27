@@ -479,7 +479,7 @@ function editWater(date, fn) {
   editDay(date, fn);
   const after = day(date).water_ml || 0;
   let seen = null; try { seen = localStorage.getItem('fs-confetti'); } catch (e) {}
-  if (!goal || before >= goal || after < goal || seen === date) return false;
+  if (!goal || date !== ymd() || before >= goal || after < goal || seen === date) return false;
   try { localStorage.setItem('fs-confetti', date); } catch (e) {}
   document.querySelectorAll('.toast').forEach(e => e.remove()); confetti(); toast('Water goal hit! 💧');
   return true;
@@ -1142,7 +1142,7 @@ function weekCard(date) {
   const isNow = ws === weekStart(ymd());
   return `<div class="card">
     <div class="wk-h"><b>${isNow ? 'This week' : 'Week of ' + fmtDate(ws, { day: 'numeric', month: 'short' })}</b><span>${fmtDate(dates[0], { day: 'numeric', month: 'short' })} – ${fmtDate(dates[6], { day: 'numeric', month: 'short' })}</span></div>
-    <div class="wk-days">${dates.map(d => { const ws_ = S.log.days[d] ? S.log.days[d].workouts : [], n = ws_.length; return `<button data-day="${d}" class="${n ? 'on' : ''}${d === S.date ? ' sel' : ''}"${d > ymd() ? ' disabled' : ''}><span>${fmtDate(d, { weekday: 'narrow' })}</span><i${n ? ` style="background:${PLACES[placeOf(ws_[0])].color}"` : ''}></i></button>`; }).join('')}</div>
+    <div class="wk-days">${dates.map(d => { const ws_ = S.log.days[d] ? S.log.days[d].workouts : [], n = ws_.length; return `<button data-day="${d}" class="${n ? 'on' : ''}${d === S.date ? ' sel' : ''}"${d > maxDay() ? ' disabled' : ''}><span>${fmtDate(d, { weekday: 'narrow' })}</span><i${n ? ` style="background:${PLACES[placeOf(ws_[0])].color}"` : ''}></i></button>`; }).join('')}</div>
     <div class="kpis" style="margin:14px 0 6px">
       <div class="kpi"><div class="k">Sessions</div><div class="v">${now.length}<small>${prev.length ? ' / ' + prev.length + ' last wk' : ''}</small></div>${now.length ? `<div class="small muted">${Object.keys(PLACES).map(k => [k, now.filter(x => placeOf(x.w) === k).length]).filter(([, n]) => n).map(([k, n]) => `<span style="white-space:nowrap"><i class="pdot" style="background:${PLACES[k].color}"></i>${PLACES[k].name} ${n}</span>`).join(' · ')}</div>` : ''}</div>
       <div class="kpi"><div class="k">Lifted</div><div class="v">${v0 ? fmtKg(v0).replace(/ (kg|t)$/, '<small> $1</small>') : '–'}</div>${vd != null && v0 ? `<div class="small ${vd >= 0 ? 'upc' : 'muted'}">${vd >= 0 ? '▲' : '▼'} ${Math.abs(vd)}% vs last wk</div>` : ''}</div>
@@ -1217,7 +1217,7 @@ function sheetWorkout(pre = {}, editDate) {
     <span class="lbl" style="margin-top:12px">Where</span>
     <div class="seg" id="wkP" role="group" aria-label="Where">${Object.entries(PLACES).map(([k, p]) => `<button type="button" data-place="${k}" aria-pressed="${k === D.place}"><i class="pdot" style="background:${p.color}"></i>${p.name}</button>`).join('')}</div>
     <div class="grid2"><label class="f">Type<select id="wkK">${['Class', 'Gym', 'WOD', 'Strength', 'Cardio', 'Other'].map(k => `<option${k === D.kind ? ' selected' : ''}>${k}</option>`).join('')}</select></label><label class="f">Name<input type="text" id="wkN" dir="auto" value="${esc(D.name || '')}" placeholder="Morfit class, Gym A"></label></div>
-    <div class="grid2"><label class="f">Date<input type="date" id="wkDt" value="${date0}" max="${ymd()}"></label><label class="f">Start time<input type="time" id="wkT" value="${esc(D.time || '')}"></label></div>
+    <div class="grid2"><label class="f">Date<input type="date" id="wkDt" value="${date0}" max="${maxDay()}"></label><label class="f">Start time<input type="time" id="wkT" value="${esc(D.time || '')}"></label></div>
     <div class="grid3"><label class="f">Minutes<input type="number" id="wkMin" inputmode="numeric" value="${D.minutes ?? ''}"></label><label class="f">kcal<input type="number" id="wkKc" inputmode="numeric" value="${D.kcal ?? ''}"></label><label class="f">RPE 1–10<input type="number" id="wkR" inputmode="numeric" min="1" max="10" value="${D.rpe ?? ''}"></label></div>
     <span class="lbl">What you did</span>
     <div id="wkParts">${partsHTML()}</div>
@@ -1278,7 +1278,7 @@ function sheetPR(name, kind, unit) {
   openSheet(name, `
     ${bench ? `<div class="small muted" style="margin-top:4px">${esc(bench[2])}</div>` : ''}
     ${bestLine ? `<div class="quick">${bestLine}</div>` : ''}
-    <div class="grid2"><label class="f">Date<input type="date" id="prD" value="${S.date}" max="${ymd()}"></label>
+    <div class="grid2"><label class="f">Date<input type="date" id="prD" value="${S.date > ymd() ? ymd() : S.date}" max="${ymd()}"></label>
       ${kind === 'lift' ? `<label class="f">Reps<select id="prR">${[1, 2, 3, 5, 10].map(r => `<option value="${r}">${r}RM</option>`).join('')}</select></label>` : `<label class="f">Scaling<select id="prSc"><option>Rx</option><option>Scaled</option><option>Rx+</option></select></label>`}</div>
     ${kind === 'lift' ? '<label class="f">Weight, kg<input type="number" id="prKg" inputmode="decimal" step="0.5" placeholder="100"></label>'
       : pr.unit === 'time' ? '<div class="grid2"><label class="f">Minutes<input type="number" id="prM" inputmode="numeric" placeholder="4"></label><label class="f">Seconds<input type="number" id="prS" inputmode="numeric" placeholder="52"></label></div>'
@@ -1316,7 +1316,7 @@ function sheetMeasure() {
   const fld = (k, l) => `<label class="f">${l}<input type="number" id="ms_${k}" inputmode="decimal" step="0.1" placeholder="${last[k] ?? ''}"></label>`;
   openSheet('Measurements', `
     <p class="small muted">Tape measure, relaxed, same time of day. Waist at the belly button. Your last values show faintly.</p>
-    <label class="f">Date<input type="date" id="msD" value="${S.date}" max="${ymd()}"></label>
+    <label class="f">Date<input type="date" id="msD" value="${S.date > ymd() ? ymd() : S.date}" max="${ymd()}"></label>
     <div class="grid2">${fld('waist', 'Waist, cm')}${fld('chest', 'Chest, cm')}${fld('hips', 'Hips, cm')}${fld('arm', 'Arm, cm')}${fld('thigh', 'Thigh, cm')}${fld('bodyfat', 'Body fat, % if known')}</div>
     <button class="btn primary block" id="msS">Save</button>`, el => {
     el.querySelector('#msS').onclick = () => {
@@ -1471,7 +1471,7 @@ function viewFood() {
 }
 function catRow(f) { return `<div class="item tap" data-act="editFood" data-id="${esc(f.id)}" data-s="${esc((f.name + ' ' + (f.brand || '') + ' ' + (f.barcode || '')).toLowerCase())}"><div class="av" dir="auto" aria-hidden="true">${esc(initials(f.name))}</div><div class="t"><div class="n" dir="auto">${esc(f.name)}</div><div class="s" dir="auto">${esc(f.brand || '')}${f.brand ? ' · ' : ''}${f.kcal} kcal · P ${f.protein} ${perWord(f)}</div></div></div>`; }
 function viewTrain() {
-  const d = day(), last30 = Object.values(S.log.days).filter(x => x.date > shift(ymd(), -30)).reduce((a, x) => a + x.workouts.length, 0);
+  const d = day(), last30 = Object.values(S.log.days).filter(x => x.date > shift(ymd(), -30) && x.date <= ymd()).reduce((a, x) => a + x.workouts.length, 0);
   const list = S.prMode === 'lift'
     ? [...new Set([...LIFTS, ...Object.values(S.log.prs).filter(p => p.kind === 'lift').map(p => p.name)])].map(n => { const pr = S.log.prs[prId(n)], b = bestOf(pr), one = b && (b[1] || b[Object.keys(b).sort((x, y) => x - y)[0]]);
       return `<button class="pr" data-act="openPR" data-name="${esc(n)}" data-kind="lift"><span class="n">${esc(n)}</span>${one ? `<span class="b">${one.kg} kg</span><span class="d">${one.reps || 1}RM · ${fmtDate(one.date, { day: 'numeric', month: 'short' })}</span>` : '<span class="b none">No PR yet</span>'}</button>`; }).join('')
@@ -1503,7 +1503,7 @@ function viewProgress() {
   const meas = Object.values(S.log.meas || {}).sort((a, b) => b.date.localeCompare(a.date)), m0 = meas[0], m1 = meas[1];
   const mrow = (k, l) => m0 && m0[k] != null ? `<div class="item"><div class="t"><div class="n">${l}</div><div class="s">${m1 && m1[k] != null ? (m0[k] - m1[k] > 0 ? '+' : '') + r1(m0[k] - m1[k]) + ' since ' + fmtDate(m1.date, { day: 'numeric', month: 'short' }) : 'first entry · ' + fmtDate(m0.date, { day: 'numeric', month: 'short' })}</div></div><div class="k">${m0[k]}<small>${k === 'bodyfat' ? '%' : 'cm'}</small></div></div>` : '';
   const f1 = x => x == null ? '–' : x.toFixed(1), fr = x => x == null ? '–' : Math.round(x).toLocaleString();
-  const logged = rows.filter(r => r.d.food.length);
+  const past = rows.filter(r => r.s <= ymd()), logged = past.filter(r => r.d.food.length);
   return `
     <div class="card">
       <div class="kpis">
@@ -1520,7 +1520,7 @@ function viewProgress() {
     <div class="card"><div class="tablewrap"><table>
       <thead><tr><th>Day</th><th>Kg</th><th>Kcal</th><th>Prot</th><th>Water</th><th>Steps</th><th>Sleep</th><th>Train</th></tr></thead><tbody>
       ${rows.map(r => `<tr class="${r.s === S.date ? 'sel' : ''}"><td>${fmtDate(r.s, { weekday: 'short', day: 'numeric' })}</td>${cell(r.w, false, f1)}${cell(r.d.food.length ? Math.round(r.t.kcal) : null, r.d.food.length && Math.abs(r.t.kcal - r.T.kcal) <= r.T.kcal * 0.1)}${cell(r.d.food.length ? Math.round(r.t.p) : null, r.t.p >= r.T.p)}${cell(r.d.water_ml || null, r.d.water_ml >= r.T.water, x => (x / 1000).toFixed(1))}${cell(r.st, r.st >= r.T.steps, x => x.toLocaleString())}${cell(r.sl, r.sl >= r.T.sleep)}<td>${r.d.workouts.length || '–'}</td></tr>`).join('')}
-      <tr class="avg"><td>Avg</td><td>${f1(avgOf(rows.map(r => r.w)))}</td><td>${fr(avgOf(logged.map(r => r.t.kcal)))}</td><td>${fr(avgOf(logged.map(r => r.t.p)))}</td><td>${(x => x == null ? '–' : (x / 1000).toFixed(1))(avgOf(rows.map(r => r.d.water_ml || null)))}</td><td>${fr(avgOf(rows.map(r => r.st)))}</td><td>${f1(avgOf(rows.map(r => r.sl)))}</td><td>${rows.reduce((a, r) => a + r.d.workouts.length, 0)}</td></tr>
+      <tr class="avg"><td>Avg</td><td>${f1(avgOf(past.map(r => r.w)))}</td><td>${fr(avgOf(logged.map(r => r.t.kcal)))}</td><td>${fr(avgOf(logged.map(r => r.t.p)))}</td><td>${(x => x == null ? '–' : (x / 1000).toFixed(1))(avgOf(past.map(r => r.d.water_ml || null)))}</td><td>${fr(avgOf(past.map(r => r.st)))}</td><td>${f1(avgOf(past.map(r => r.sl)))}</td><td>${past.reduce((a, r) => a + r.d.workouts.length, 0)}</td></tr>
       </tbody></table></div><p class="small muted" style="margin:8px 0 0">Bright means the day hit its target. Calories count within 10%.</p></div>
     <h2>Measurements<button data-act="measure">+ Measure</button></h2>
     <div class="card" style="padding:6px 18px">${m0 ? `<div class="list">${mrow('waist', 'Waist') + mrow('chest', 'Chest') + mrow('hips', 'Hips') + mrow('arm', 'Arm') + mrow('thigh', 'Thigh') + mrow('bodyfat', 'Body fat')}</div>` : '<div class="empty">Measure your waist every 2 weeks, same time of day. It often shows fat loss the scale hides.</div>'}</div>`;
@@ -1607,15 +1607,15 @@ function setHeader() {
   const t = ymd(), dated = ['today', 'food', 'train', 'progress'].includes(S.tab);
   const dn = S.date === t ? 'Today' : S.date === shift(t, -1) ? 'Yesterday' : fmtDate(S.date, { weekday: 'long' });
   $('title').textContent = { scan: 'Scan', settings: 'Settings', progress: 'Progress', food: 'Food', train: 'Training' }[S.tab] || dn;
-  $('subtitle').textContent = S.tab === 'scan' ? `Adding to ${dayWord(S.date)}` : !dated ? '' : (S.tab === 'today' ? '' : dn + ' · ') + fmtDate(S.date, { day: 'numeric', month: 'long' });
+  $('subtitle').textContent = S.tab === 'scan' ? `Adding to ${dayWord(S.date)}` : !dated ? '' : (S.date > t ? 'Planned · ' : '') + (S.tab === 'today' ? '' : dn + ' · ') + fmtDate(S.date, { day: 'numeric', month: 'long' });
   $('goToday').hidden = !dated || S.date === t;
   $('weekrow').hidden = !dated;
   if (!dated) return;
   const ws = weekStart(S.date);
-  $('nextWeek').disabled = ws >= weekStart(t);
+  $('nextWeek').disabled = ws >= weekStart(maxDay());
   $('week').innerHTML = Array.from({ length: 7 }, (_, i) => { const d = shift(ws, i), x = S.log.days[d];
     const has = (x && (x.food.length || x.workouts.length || x.weight != null || x.water_ml)) || false;
-    return `<button data-day="${d}" class="${has ? 'has' : ''}${d === t ? ' today' : ''}"${d === S.date ? ' aria-current="date"' : ''}${d > t ? ' disabled' : ''} aria-label="${fmtDate(d, { weekday: 'long', day: 'numeric', month: 'long' })}"><span class="wd">${fmtDate(d, { weekday: 'short' }).slice(0, 3)}</span><span class="dn">${parseD(d).getDate()}</span><span class="dt"></span></button>`; }).join('');
+    return `<button data-day="${d}" class="${has ? 'has' : ''}${d === t ? ' today' : ''}"${d === S.date ? ' aria-current="date"' : ''}${d > maxDay() ? ' disabled' : ''} aria-label="${fmtDate(d, { weekday: 'long', day: 'numeric', month: 'long' })}"><span class="wd">${fmtDate(d, { weekday: 'short' }).slice(0, 3)}</span><span class="dn">${parseD(d).getDate()}</span><span class="dt"></span></button>`; }).join('');
 }
 function render() {
   if (S.tab !== 'scan') stopCamera();
@@ -1646,7 +1646,9 @@ function render() {
   }
 }
 function go(tab) { S.tab = tab; closeSheet(); $('view').innerHTML = ''; render(); window.scrollTo(0, 0); if (tab === 'scan') startCamera(); }
-function goDate(date) { S.date = date > ymd() ? ymd() : date; render(); }
+// future days open for planning, up to two weeks ahead
+function maxDay() { return shift(ymd(), 14); }
+function goDate(date) { S.date = date > maxDay() ? maxDay() : date; render(); }
 
 // ---------- events ----------
 $('prevWeek').onclick = () => goDate(shift(S.date, -7));
