@@ -194,6 +194,57 @@ details summary::-webkit-details-marker { display: none; }
 .legend { display: flex; gap: 12px; font-size: 12px; color: var(--muted); flex-wrap: wrap; }
 .legend i { display: inline-block; width: 8px; height: 8px; border-radius: 50%; margin-right: 5px; vertical-align: 0; }
 .legend i.ln { width: 14px; height: 3px; border-radius: 2px; vertical-align: 3px; }
+/* sessions */
+.sess + .sess { border-top: 1px solid var(--line); margin-top: 18px; padding-top: 18px; }
+.sess-h { display: flex; justify-content: space-between; align-items: center; gap: 10px; }
+.sess-d b { font-family: var(--display); font-size: 21px; font-weight: 700; letter-spacing: -0.01em; }
+.sess-d span { color: var(--muted); font-size: 14px; margin-left: 8px; }
+.sess-t { font-weight: 600; margin-top: 2px; overflow-wrap: anywhere; }
+.sess-t .score { font-family: var(--display); font-weight: 700; color: var(--accent); margin-left: 6px; }
+.sess-m { font-size: 13px; color: var(--muted); margin-top: 4px; font-variant-numeric: tabular-nums; }
+.sess pre { margin: 10px 0 0; font: 13px/1.45 Inter, sans-serif; color: #D4D4D8; white-space: pre-wrap; overflow-wrap: anywhere; }
+.sess-n { font-size: 13px; color: #D4D4D8; background: var(--panel2); border-radius: 12px; padding: 10px 12px; margin-top: 12px; white-space: pre-wrap; }
+.sess-a { display: flex; gap: 18px; margin-top: 4px; }
+.sess-a .link { font-size: 13px; padding: 8px 0 0; }
+.part { margin-top: 14px; padding-left: 12px; border-left: 2px solid var(--line); }
+.part-h { display: flex; gap: 8px; align-items: baseline; flex-wrap: wrap; font-size: 12px; color: var(--muted); }
+.part-h b { text-transform: uppercase; letter-spacing: .08em; font-weight: 600; }
+.mv { display: flex; width: 100%; align-items: center; gap: 10px; text-align: left; background: none; border: 0; border-bottom: 1px solid var(--hair); padding: 10px 0; color: var(--text); }
+.mv:last-child { border-bottom: 0; }
+.mv .t { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 1px; }
+.mv .n { font-weight: 600; overflow-wrap: anywhere; }
+.mv .s { font-size: 13px; color: var(--muted); font-variant-numeric: tabular-nums; overflow-wrap: anywhere; }
+.cmp { flex: none; font-size: 12px; font-weight: 700; padding: 4px 9px; border-radius: 99px; background: var(--panel2); color: var(--muted); white-space: nowrap; font-variant-numeric: tabular-nums; }
+.cmp.up { color: var(--accent); background: rgba(200, 241, 53, .12); }
+.cmp.down { color: var(--warn); background: rgba(245, 184, 61, .1); }
+.cmp.new { color: var(--protein); background: rgba(96, 165, 250, .1); }
+.pill.prb { background: var(--accent); color: var(--accent-ink); }
+.gchips { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 12px; }
+.gchips span { font-size: 12px; font-weight: 600; padding: 4px 10px; border-radius: 99px; background: var(--panel2); color: var(--muted); }
+.gchips.big span { color: var(--dim); }
+.gchips.big span.on { background: rgba(200, 241, 53, .12); color: var(--accent); }
+.gchips.big span.miss { color: var(--warn); }
+.wk-h { display: flex; justify-content: space-between; align-items: baseline; gap: 10px; }
+.wk-h b { font-family: var(--display); font-size: 19px; font-weight: 700; }
+.wk-h span { font-size: 13px; color: var(--muted); }
+.wk-days { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 6px; margin-top: 12px; }
+.wk-days button { background: var(--panel2); border: 1px solid transparent; border-radius: 10px; padding: 6px 0; display: flex; flex-direction: column; align-items: center; gap: 5px; color: var(--muted); font-size: 11px; font-weight: 600; }
+.wk-days i { width: 8px; height: 8px; border-radius: 50%; background: var(--line); }
+.wk-days .on i { background: var(--accent); }
+.wk-days .sel { border-color: #3A3A3F; color: var(--text); }
+.wk-days button:disabled { opacity: .3; }
+.upc { color: var(--accent); }
+.mchart { display: block; width: 100%; height: auto; }
+.mchart .ax { fill: var(--dim); font-size: 11px; font-family: Inter, sans-serif; }
+.fpart { background: var(--panel); border-radius: 16px; padding: 12px; margin-bottom: 10px; }
+.fpart input { background: var(--panel2); padding: 10px 12px; }
+.fmove { margin-top: 12px; padding-top: 12px; border-top: 1px solid var(--line); }
+.fsets { display: grid; grid-template-columns: 22px repeat(3, minmax(0, 1fr)) 32px; gap: 6px; margin-top: 8px; align-items: center; }
+.fs-h { font-size: 11px; color: var(--muted); font-weight: 600; }
+.fs-n { font-size: 13px; color: var(--muted); text-align: center; }
+.x.sm { width: 32px; height: 32px; font-size: 16px; border-radius: 16px; flex: 0 0 auto; }
+.each { flex: 1; display: flex; align-items: center; gap: 8px; font-size: 13px; color: var(--muted); }
+.each input { width: auto; }
 /* workouts */
 .wod { padding: 13px 0; border-bottom: 1px solid var(--hair); }
 .wod:last-child { border-bottom: 0; }
@@ -867,18 +918,217 @@ function sheetCheckin() {
     };
   });
 }
-function sheetWorkout(pre = {}) {
-  openSheet('Log workout', `
-    <div class="grid2"><label class="f">Type<select id="wkK">${['WOD', 'Class', 'Strength', 'Gym', 'Cardio', 'Other'].map(k => `<option${k === (pre.kind || 'WOD') ? ' selected' : ''}>${k}</option>`).join('')}</select></label><label class="f">Name<input type="text" id="wkN" value="${esc(pre.name || '')}" placeholder="Fran, Back squat"></label></div>
-    <label class="f">The workout as written<textarea id="wkD" placeholder="21-15-9 thrusters 43 kg, pull-ups">${esc(pre.desc || '')}</textarea></label>
-    <div class="grid2"><label class="f">Score / result<input type="text" id="wkSc" placeholder="4:52 · 5 rds + 7 · 5×5 @ 100 kg"></label><label class="f">Scaling<select id="wkSa"><option>Rx</option><option>Scaled</option><option>Rx+</option><option>n/a</option></select></label></div>
-    <label class="f">Effort, RPE 1–10<input type="number" id="wkR" inputmode="numeric" min="1" max="10" placeholder="8"></label>
-    <label class="f">How it felt, pain, PRs<textarea id="wkNo" placeholder="Grip went in round 2">${esc(pre.notes || '')}</textarea></label>
+// ---------- structured workouts ----------
+// A workout can hold parts → moves → sets ({reps, kg, sec}); `each` means the kg is per hand.
+const GROUPS = [
+  ['Shoulders', /strict press|push press|shoulder|overhead|ohp|lateral raise|front raise|rear delt|face pull|snatch|jerk|handstand|hspu|arnold|upright row|pike/i],
+  ['Chest', /bench|push-?up|chest|dip|fly|floor press/i],
+  ['Back', /row\b|rows\b|pull-?up|chin|lat |pulldown|deadlift|rdl|good morning|snatch|clean|superman|back ext/i],
+  ['Arms', /curl|tricep|skull|dip|chin|close.grip|hammer/i],
+  ['Legs', /squat|step-?up|lunge|thruster|wall ?ball|leg |deadlift|clean|snatch|box jump|split|pistol|calf/i],
+  ['Glutes', /squat|step-?up|lunge|deadlift|rdl|hip thrust|glute|swing|bridge|split|kickback/i],
+  ['Core', /hollow|plank|sit-?up|toes|v-?up|crunch|\babs?\b|knees to|l-?sit|russian twist|dead bug|pallof|woodchop/i],
+  ['Cardio', /rope|single.?under|double.?under|\bdu\b|\brun|erg|rower|ski|bike|burpee|assault|echo|jumping/i],
+];
+function groupsOf(name) { return GROUPS.filter(([, re]) => re.test(name)).map(g => g[0]); }
+function moveKey(n) { return slug(String(n).replace(/\s+/g, ' ').trim()); }
+function wTime(w) { return w.time || (w.loggedAt || '').slice(11, 16) || ''; }
+function allSessions() { // newest first
+  const out = [];
+  for (const d of Object.values(S.log.days)) for (const w of d.workouts || []) out.push({ date: d.date, w });
+  return out.sort((a, b) => b.date.localeCompare(a.date) || wTime(b.w).localeCompare(wTime(a.w)));
+}
+function moveStats(m) {
+  const mult = m.each ? 2 : 1; let top = null, topReps = 0, vol = 0, reps = 0, sec = 0;
+  for (const s of m.sets || []) {
+    const kg = s.kg || 0, r = s.reps || 0; vol += kg * r * mult; reps += r; if (s.sec) sec = Math.max(sec, s.sec);
+    if (kg && (top == null || kg > top || (kg === top && r > topReps))) { top = kg; topReps = r; }
+  }
+  return { top, topReps, vol, reps, sec, n: (m.sets || []).length };
+}
+function moveHistory(key) { // oldest first
+  const out = [];
+  for (const { date, w } of allSessions().reverse()) for (const p of w.parts || []) for (const m of p.moves || []) if (moveKey(m.name) === key) out.push({ date, w, p, m, st: moveStats(m) });
+  return out;
+}
+function cmpMove(a, b) {
+  const res = (d, u) => ({ dir: Math.sign(d), text: (d > 0 ? '+' : '−') + Math.abs(r1(d)) + u });
+  if (a.top != null && b.top != null) {
+    if (r1(a.top - b.top)) return res(a.top - b.top, ' kg');
+    if (a.topReps !== b.topReps) return res(a.topReps - b.topReps, ' reps');
+  } else if (a.sec || b.sec) { if (a.sec !== b.sec) return res(a.sec - b.sec, ' s'); }
+  if (a.reps !== b.reps) return res(a.reps - b.reps, ' reps');
+  return { dir: 0, text: 'same' };
+}
+function moveVerdict(hist, i) { // compare entry i with the one before it
+  const cur = hist[i]; if (!cur || !cur.st.n) return null;
+  const before = hist.slice(0, i).filter(h => h.w !== cur.w && h.st.n); // a warm-up set in the same session doesn't count
+  if (!before.length) return { cls: 'new', text: 'first time' };
+  // compare with the last session that had it: the same part if it had one (warm-up vs warm-up), else its heaviest
+  const last = before.filter(h => h.w === before[before.length - 1].w);
+  const ref = last.find(h => (h.p.label || '') === (cur.p.label || '')) || last.reduce((a, h) => (h.st.top || 0) > (a.st.top || 0) ? h : a);
+  const c = cmpMove(cur.st, ref.st);
+  const prevTop = Math.max(...before.map(h => h.st.top || 0));
+  const pr = cur.st.top != null && cur.st.top > prevTop;
+  return { cls: c.dir > 0 ? 'up' : c.dir < 0 ? 'down' : 'same', text: (c.dir > 0 ? '▲ ' : c.dir < 0 ? '▼ ' : '= ') + c.text, pr };
+}
+function fmtSets(m) {
+  const s = m.sets || []; if (!s.length) return '';
+  const g = []; for (const x of s) { const l = g[g.length - 1]; if (l && l.x.reps === x.reps && l.x.kg === x.kg && l.x.sec === x.sec) l.n++; else g.push({ x, n: 1 }); }
+  const unit = s.some(x => x.kg) ? (m.each ? ' kg each' : ' kg') : '';
+  if (g.length > 2 && g.every(y => y.n === 1 && y.x.reps === s[0].reps && !y.x.sec && y.x.kg)) return s[0].reps + ' reps · ' + s.map(x => x.kg).join(' → ') + unit;
+  const one = ({ x, n }) => (n > 1 ? n + ' × ' : '') + (x.sec ? x.sec + ' s' : (x.reps || 0) + (x.kg || n > 1 ? '' : ' reps')) + (x.kg ? ' @ ' + x.kg : '');
+  return g.map(one).join(', ') + unit;
+}
+function sessionStats(w) {
+  let vol = 0; const groups = new Set();
+  for (const p of w.parts || []) for (const m of p.moves || []) { vol += moveStats(m).vol; groupsOf(m.name).forEach(x => groups.add(x)); }
+  if (!(w.parts || []).length) groupsOf((w.name || '') + ' ' + (w.desc || '')).forEach(x => groups.add(x));
+  return { vol: Math.round(vol), groups: [...groups] };
+}
+function fmtKg(v) { return v >= 10000 ? r1(v / 1000) + ' t' : Math.round(v).toLocaleString() + ' kg'; }
+function sessionCard(date, w, actions = true) {
+  const st = sessionStats(w), meta = [wTime(w), w.minutes ? w.minutes + ' min' : '', w.kcal ? Math.round(w.kcal) + ' kcal' : '', w.rpe ? 'RPE ' + w.rpe : '', st.vol ? fmtKg(st.vol) + ' lifted' : ''].filter(Boolean);
+  const hists = {};
+  const parts = (w.parts || []).map(p => `<div class="part"><div class="part-h"><b>${esc(p.label || 'Part')}</b>${p.title ? `<span dir="auto">${esc(p.title)}</span>` : ''}</div>${(p.moves || []).map(m => {
+    const key = moveKey(m.name), hist = hists[key] || (hists[key] = moveHistory(key)), i = hist.findIndex(h => h.m === m), v = moveVerdict(hist, i);
+    return `<button class="mv" data-act="move" data-key="${esc(key)}"><span class="t"><span class="n" dir="auto">${esc(m.name)}${v && v.pr ? ' <span class="pill xs prb">PR</span>' : ''}</span><span class="s" dir="auto">${esc([fmtSets(m), m.note].filter(Boolean).join(' · '))}</span></span>${v ? `<span class="cmp ${v.cls}">${esc(v.text)}</span>` : ''}</button>`;
+  }).join('')}</div>`).join('');
+  return `<div class="sess">
+    <div class="sess-h"><div class="sess-d"><b>${fmtDate(date, { weekday: 'long' })}</b><span>${fmtDate(date, { day: 'numeric', month: 'long' })}</span></div><span class="pill xs new">${esc(w.kind || 'Workout')}</span></div>
+    <div class="sess-t" dir="auto">${esc(w.name || w.kind || 'Workout')}${w.score ? ` <span class="score">${esc(w.score)}</span>` : ''}${w.scale && w.scale !== 'n/a' && w.scale !== 'Rx' ? ` <span class="pill xs">${esc(w.scale)}</span>` : ''}</div>
+    ${meta.length ? `<div class="sess-m">${meta.map(esc).join(' · ')}</div>` : ''}
+    ${parts}
+    ${w.desc && !(w.parts || []).length ? `<pre dir="auto">${esc(w.desc)}</pre>` : ''}
+    ${w.notes ? `<div class="sess-n" dir="auto">${esc(w.notes)}</div>` : ''}
+    ${st.groups.length ? `<div class="gchips">${st.groups.map(g => `<span>${g}</span>`).join('')}</div>` : ''}
+    ${actions ? `<div class="sess-a"><button class="link" data-act="editWorkout" data-date="${date}" data-id="${esc(w.id)}">Edit</button><button class="link" data-act="delWorkout" data-date="${date}" data-id="${esc(w.id)}" style="color:var(--danger)">Delete</button></div>` : ''}
+  </div>`;
+}
+function workoutHTML(w, actions) { return sessionCard(S.date, w, actions); }
+function weekCard(date) {
+  const ws = weekStart(date), dates = Array.from({ length: 7 }, (_, i) => shift(ws, i));
+  const sessIn = ds => ds.flatMap(d => (S.log.days[d] ? S.log.days[d].workouts.map(w => ({ date: d, w })) : []));
+  const now = sessIn(dates), prev = sessIn(dates.map(d => shift(d, -7)));
+  const vol = a => a.reduce((t, x) => t + sessionStats(x.w).vol, 0), kcal = a => a.reduce((t, x) => t + (x.w.kcal || 0), 0);
+  const v0 = vol(now), v1 = vol(prev), vd = v1 ? Math.round((v0 - v1) / v1 * 100) : null;
+  const cnt = {}; for (const x of now) for (const g of sessionStats(x.w).groups) cnt[g] = (cnt[g] || 0) + 1;
+  const order = ['Shoulders', 'Chest', 'Back', 'Arms', 'Legs', 'Glutes', 'Core', 'Cardio'];
+  const isNow = ws === weekStart(ymd());
+  return `<div class="card">
+    <div class="wk-h"><b>${isNow ? 'This week' : 'Week of ' + fmtDate(ws, { day: 'numeric', month: 'short' })}</b><span>${fmtDate(dates[0], { day: 'numeric', month: 'short' })} – ${fmtDate(dates[6], { day: 'numeric', month: 'short' })}</span></div>
+    <div class="wk-days">${dates.map(d => { const n = S.log.days[d] ? S.log.days[d].workouts.length : 0; return `<button data-day="${d}" class="${n ? 'on' : ''}${d === S.date ? ' sel' : ''}"${d > ymd() ? ' disabled' : ''}><span>${fmtDate(d, { weekday: 'narrow' })}</span><i></i></button>`; }).join('')}</div>
+    <div class="kpis" style="margin:14px 0 6px">
+      <div class="kpi"><div class="k">Sessions</div><div class="v">${now.length}<small>${prev.length ? ' / ' + prev.length + ' last wk' : ''}</small></div></div>
+      <div class="kpi"><div class="k">Lifted</div><div class="v">${v0 ? fmtKg(v0).replace(/ (kg|t)$/, '<small> $1</small>') : '–'}</div>${vd != null && v0 ? `<div class="small ${vd >= 0 ? 'upc' : 'muted'}">${vd >= 0 ? '▲' : '▼'} ${Math.abs(vd)}% vs last wk</div>` : ''}</div>
+      <div class="kpi"><div class="k">Burned</div><div class="v">${kcal(now) ? Math.round(kcal(now)) + '<small> kcal</small>' : '–'}</div></div>
+    </div>
+    <div class="gchips big">${order.map(g => `<span class="${cnt[g] ? 'on' : g === 'Shoulders' || g === 'Glutes' ? 'miss' : ''}">${g}${cnt[g] ? ' ' + cnt[g] : ''}</span>`).join('')}</div>
+    ${now.length && !cnt.Shoulders ? '<div class="msg warn" style="margin:12px 0 0">No shoulder work yet this week. Shoulders are a focus for you, so add a shoulder block (Gym A) or ask for one.</div>' : ''}
+  </div>`;
+}
+function movesList() {
+  const keys = new Map();
+  for (const { date, w } of allSessions()) for (const p of w.parts || []) for (const m of p.moves || []) { const k = moveKey(m.name); if (!keys.has(k)) keys.set(k, { name: m.name, date }); }
+  return [...keys.entries()].map(([k, it]) => {
+    const h = moveHistory(k), last = h[h.length - 1], v = moveVerdict(h, h.length - 1), best = Math.max(...h.map(x => x.st.top || 0));
+    return `<button class="mv" data-act="move" data-key="${esc(k)}"><span class="t"><span class="n" dir="auto">${esc(it.name)}</span><span class="s">${h.length} session${h.length === 1 ? '' : 's'} · last ${fmtDate(last.date, { day: 'numeric', month: 'short' })}${best ? ' · best ' + best + ' kg' : ''}</span></span>${v ? `<span class="cmp ${v.cls}">${esc(v.text)}</span>` : ''}</button>`;
+  }).join('');
+}
+function miniChart(pts, unit) { // pts: [{date, y}] oldest first
+  if (pts.length < 2) return '';
+  const W = 320, Ht = 150, pl = 30, pr = 10, pt = 12, pb = 22;
+  const ys = pts.map(p => p.y); let lo = Math.min(...ys), hi = Math.max(...ys); if (hi === lo) { lo -= 1; hi += 1; } const pad = (hi - lo) * 0.15; lo -= pad; hi += pad;
+  const x = i => pl + i / (pts.length - 1) * (W - pl - pr), y = v => pt + (hi - v) / (hi - lo) * (Ht - pt - pb);
+  const path = pts.map((p, i) => (i ? 'L' : 'M') + x(i).toFixed(1) + ' ' + y(p.y).toFixed(1)).join(' ');
+  const top = Math.max(...ys);
+  return `<svg viewBox="0 0 ${W} ${Ht}" class="mchart" role="img" aria-label="Trend over ${pts.length} sessions">
+    <line x1="${pl}" x2="${W - pr}" y1="${y(top)}" y2="${y(top)}" stroke="#26262A" stroke-dasharray="3 3"/>
+    <text x="${pl - 6}" y="${y(top) + 4}" text-anchor="end" class="ax">${r1(top)}</text><text x="${pl - 6}" y="${y(Math.min(...ys)) + 4}" text-anchor="end" class="ax">${r1(Math.min(...ys))}</text>
+    <path d="${path}" fill="none" stroke="#C8F135" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round"/>
+    ${pts.map((p, i) => `<circle cx="${x(i).toFixed(1)}" cy="${y(p.y).toFixed(1)}" r="${p.y === top ? 5 : 3.5}" fill="${p.y === top ? '#C8F135' : '#6B6B73'}"/>`).join('')}
+    <text x="${pl}" y="${Ht - 4}" class="ax">${fmtDate(pts[0].date, { day: 'numeric', month: 'short' })}</text><text x="${W - pr}" y="${Ht - 4}" text-anchor="end" class="ax">${fmtDate(pts[pts.length - 1].date, { day: 'numeric', month: 'short' })}</text>
+  </svg><div class="small muted" style="margin-top:4px">${unit}</div>`;
+}
+function sheetMove(key) {
+  const h = moveHistory(key); if (!h.length) return;
+  const name = h[h.length - 1].m.name, hasKg = h.some(x => x.st.top != null), hasSec = !hasKg && h.some(x => x.st.sec);
+  const pts = h.map(x => ({ date: x.date, y: hasKg ? x.st.top || 0 : hasSec ? x.st.sec : x.st.reps }));
+  const bestE = hasKg ? h.reduce((b, x) => (!b || (x.st.top || 0) > (b.st.top || 0) ? x : b), null) : null;
+  const e1rm = hasKg ? Math.max(...h.filter(x => x.st.top && x.st.topReps && x.st.topReps <= 10).map(x => x.st.top * (1 + x.st.topReps / 30)), 0) : 0;
+  const groups = groupsOf(name);
+  openSheet(name, `
+    ${groups.length ? `<div class="gchips" style="margin-top:6px">${groups.map(g => `<span class="on">${g}</span>`).join('')}</div>` : ''}
+    <div class="kpis" style="margin-top:16px">
+      <div class="kpi"><div class="k">Sessions</div><div class="v">${h.length}</div></div>
+      ${hasKg ? `<div class="kpi"><div class="k">Best</div><div class="v">${bestE.st.top}<small> kg</small></div><div class="small muted">${fmtDate(bestE.date, { day: 'numeric', month: 'short' })}</div></div>
+      <div class="kpi"><div class="k">Est. 1RM</div><div class="v">${e1rm ? Math.round(e1rm) + '<small> kg</small>' : '–'}</div></div>` : `<div class="kpi"><div class="k">Best</div><div class="v">${Math.max(...pts.map(p => p.y))}<small>${hasSec ? ' s' : ' reps'}</small></div></div>`}
+    </div>
+    <div class="card" style="margin-top:12px">${miniChart(pts, hasKg ? 'Heaviest set each session, kg' + (h[h.length - 1].m.each ? ' per hand' : '') : hasSec ? 'Longest hold each session, seconds' : 'Total reps each session')}${pts.length < 2 ? '<div class="empty">Log this movement again and your trend appears here.</div>' : ''}</div>
+    <h2>History</h2>
+    <div class="list">${h.map((x, i) => ({ x, v: moveVerdict(h, i) })).reverse().map(({ x, v }) => `<div class="item"><div class="t"><div class="n">${fmtDate(x.date, { weekday: 'short', day: 'numeric', month: 'short' })}${v && v.pr ? ' <span class="pill xs prb">PR</span>' : ''}</div><div class="s" dir="auto">${esc(fmtSets(x.m))}${x.m.note ? ' · ' + esc(x.m.note) : ''}</div></div>${v ? `<span class="cmp ${v.cls}">${esc(v.text)}</span>` : ''}</div>`).join('')}</div>
+    ${e1rm ? '<p class="small muted">Est. 1RM is worked out from your heaviest set of 10 reps or fewer. It is a guide, not a test result.</p>' : ''}`);
+}
+function knownMoves() { const s = new Map(); for (const { w } of allSessions()) for (const p of w.parts || []) for (const m of p.moves || []) if (!s.has(moveKey(m.name))) s.set(moveKey(m.name), m.name); return [...s.values(), ...LIFTS.filter(l => !s.has(moveKey(l)))]; }
+function sheetWorkout(pre = {}, editDate) {
+  const D = clone(Object.assign({ kind: 'Class', name: '', parts: [], notes: '', desc: '' }, pre));
+  if (!D.parts.length && !pre.id) D.parts.push({ label: 'Part 1', title: '', moves: [{ name: '', each: false, sets: [{ reps: null, kg: null }] }] });
+  const date0 = editDate || S.date;
+  const numIn = (cls, v, ph, extra = '') => `<input type="number" inputmode="decimal" step="any" class="${cls}" value="${v ?? ''}" placeholder="${ph}" ${extra}>`;
+  const partsHTML = () => D.parts.map((p, pi) => `<div class="fpart" data-pi="${pi}">
+      <div class="row"><input type="text" class="pLabel" value="${esc(p.label || '')}" placeholder="Part ${pi + 1}" style="flex:0 0 32%"><input type="text" class="pTitle" dir="auto" value="${esc(p.title || '')}" placeholder="5 rounds, teams of 2"><button class="x sm" data-rmpart="${pi}" aria-label="Remove part">×</button></div>
+      ${p.moves.map((m, mi) => `<div class="fmove" data-mi="${mi}">
+        <div class="row"><input type="text" class="mName" dir="auto" list="moveNames" value="${esc(m.name || '')}" placeholder="Movement, e.g. Bench press"><button class="x sm" data-rmmove="${pi}.${mi}" aria-label="Remove movement">×</button></div>
+        <div class="fsets"><span class="fs-h">Set</span><span class="fs-h">Reps</span><span class="fs-h">kg</span><span class="fs-h">Sec</span><span></span>
+        ${m.sets.map((s, si) => `<span class="fs-n">${si + 1}</span>${numIn('sReps', s.reps, '8', `data-si="${si}"`)}${numIn('sKg', s.kg, '–', `data-si="${si}"`)}${numIn('sSec', s.sec, '–', `data-si="${si}"`)}<button class="x sm" data-rmset="${pi}.${mi}.${si}" aria-label="Remove set">×</button>`).join('')}</div>
+        <div class="row" style="margin-top:6px"><button class="btn sm" data-addset="${pi}.${mi}" style="flex:0 0 auto">+ Set</button><label class="each"><input type="checkbox" class="mEach"${m.each ? ' checked' : ''}> kg is per hand</label></div>
+      </div>`).join('')}
+      <button class="link" data-addmove="${pi}" style="font-size:13px">+ Movement</button>
+    </div>`).join('');
+  openSheet(pre.id ? 'Edit workout' : 'Log workout', `
+    <datalist id="moveNames">${knownMoves().map(n => `<option value="${esc(n)}">`).join('')}</datalist>
+    <div class="grid2"><label class="f">Type<select id="wkK">${['Class', 'Gym', 'WOD', 'Strength', 'Cardio', 'Other'].map(k => `<option${k === D.kind ? ' selected' : ''}>${k}</option>`).join('')}</select></label><label class="f">Name<input type="text" id="wkN" dir="auto" value="${esc(D.name || '')}" placeholder="Morfit class, Gym A"></label></div>
+    <div class="grid2"><label class="f">Date<input type="date" id="wkDt" value="${date0}" max="${ymd()}"></label><label class="f">Start time<input type="time" id="wkT" value="${esc(D.time || '')}"></label></div>
+    <div class="grid3"><label class="f">Minutes<input type="number" id="wkMin" inputmode="numeric" value="${D.minutes ?? ''}"></label><label class="f">kcal<input type="number" id="wkKc" inputmode="numeric" value="${D.kcal ?? ''}"></label><label class="f">RPE 1–10<input type="number" id="wkR" inputmode="numeric" min="1" max="10" value="${D.rpe ?? ''}"></label></div>
+    <span class="lbl">What you did</span>
+    <div id="wkParts">${partsHTML()}</div>
+    <button class="btn block" id="wkAddPart">+ Add part</button>
+    <label class="f">Score or result (optional)<input type="text" id="wkSc" value="${esc(D.score || '')}" placeholder="5 rounds + 7, 12:40"></label>
+    <label class="f">How it felt, pain, next time<textarea id="wkNo" dir="auto">${esc(D.notes || '')}</textarea></label>
+    <details${D.desc ? ' open' : ''}><summary class="lbl" style="margin:12px 0 0">Whiteboard text ›</summary><textarea id="wkD" dir="auto" style="margin-top:8px">${esc(D.desc || '')}</textarea></details>
     <button class="btn primary block" id="wkS">Save workout</button>`, el => {
+    const box = el.querySelector('#wkParts');
+    const read = () => { // pull typed values into D before re-drawing
+      box.querySelectorAll('.fpart').forEach(pe => {
+        const p = D.parts[pe.dataset.pi]; p.label = pe.querySelector('.pLabel').value.trim(); p.title = pe.querySelector('.pTitle').value.trim();
+        pe.querySelectorAll('.fmove').forEach(me => {
+          const m = p.moves[me.dataset.mi]; m.name = me.querySelector('.mName').value.trim(); m.each = me.querySelector('.mEach').checked;
+          m.sets.forEach((s, si) => { s.reps = num(me.querySelector(`.sReps[data-si="${si}"]`).value); s.kg = num(me.querySelector(`.sKg[data-si="${si}"]`).value); s.sec = num(me.querySelector(`.sSec[data-si="${si}"]`).value); });
+        });
+      });
+    };
+    const redraw = () => { box.innerHTML = partsHTML(); };
+    box.addEventListener('click', e => {
+      const t = e.target.closest('button'); if (!t) return; read();
+      const ix = k => (t.dataset[k] || '').split('.').map(Number);
+      if (t.dataset.addset) { const [pi, mi] = ix('addset'), sets = D.parts[pi].moves[mi].sets; sets.push(Object.assign({}, sets[sets.length - 1] || { reps: null, kg: null })); }
+      else if (t.dataset.addmove) D.parts[+t.dataset.addmove].moves.push({ name: '', each: false, sets: [{ reps: null, kg: null }] });
+      else if (t.dataset.rmset) { const [pi, mi, si] = ix('rmset'); D.parts[pi].moves[mi].sets.splice(si, 1); }
+      else if (t.dataset.rmmove) { const [pi, mi] = ix('rmmove'); D.parts[pi].moves.splice(mi, 1); }
+      else if (t.dataset.rmpart) D.parts.splice(+t.dataset.rmpart, 1);
+      else return;
+      redraw();
+    });
+    el.querySelector('#wkAddPart').onclick = () => { read(); D.parts.push({ label: 'Part ' + (D.parts.length + 1), title: '', moves: [{ name: '', each: false, sets: [{ reps: null, kg: null }] }] }); redraw(); };
     el.querySelector('#wkS').onclick = () => {
-      const w = { id: uid(), kind: $('wkK').value, name: $('wkN').value.trim(), desc: $('wkD').value.trim(), score: $('wkSc').value.trim(), scale: $('wkSa').value, rpe: num($('wkR').value), notes: $('wkNo').value.trim(), watch: pre.watch || null, loggedAt: new Date().toISOString() };
-      if (!w.name && !w.desc && !w.score) return $('wkN').focus();
-      editDay(S.date, d => d.workouts.push(w)); closeSheet(); toast('Workout saved');
+      read();
+      const parts = D.parts.map(p => ({ label: p.label, title: p.title, moves: p.moves.map(m => ({ name: m.name, each: !!m.each, note: m.note || undefined, sets: m.sets.filter(s => s.reps != null || s.kg != null || s.sec != null).map(s => { const o = {}; if (s.reps != null) o.reps = s.reps; if (s.kg != null) o.kg = s.kg; if (s.sec != null) o.sec = s.sec; return o; }) })).filter(m => m.name) })).filter(p => p.moves.length);
+      const w = Object.assign({}, pre, { id: pre.id || uid(), kind: $('wkK').value, name: $('wkN').value.trim(), time: $('wkT').value || null, minutes: num($('wkMin').value), kcal: num($('wkKc').value), rpe: num($('wkR').value), score: $('wkSc').value.trim(), notes: $('wkNo').value.trim(), desc: $('wkD').value.trim(), parts, watch: pre.watch || null, loggedAt: pre.loggedAt || new Date().toISOString() });
+      if (!w.name && !parts.length && !w.desc && !w.score) return $('wkN').focus();
+      const date = $('wkDt').value || date0;
+      if (pre.id && date !== date0) editDay(date0, d => { d.workouts = d.workouts.filter(x => x.id !== w.id); });
+      editDay(date, d => { const i = d.workouts.findIndex(x => x.id === w.id); if (i >= 0) d.workouts[i] = w; else d.workouts.push(w); });
+      closeSheet(); toast(pre.id ? 'Workout updated' : 'Workout saved');
     };
   });
 }
@@ -1031,9 +1281,6 @@ function niceType(t) { t = String(t || 'Workout').replace(/^EXERCISE_TYPE_/i, ''
 function chips(field, label, value, lo, hi) {
   return `<div class="chiprow"><div class="lab">${label}<span>1 ${lo} · 5 ${hi}</span></div><div class="chips" data-field="${field}">${[1, 2, 3, 4, 5].map(i => `<button type="button" data-v="${i}" aria-pressed="${value === i}">${i}</button>`).join('')}</div></div>`;
 }
-function workoutHTML(w, actions) {
-  return `<div class="wod"><div class="head"><span class="pill xs new">${esc(w.kind)}</span><span class="name" dir="auto">${esc(w.name || w.kind)}</span>${w.score ? `<span class="score">${esc(w.score)}</span>` : ''}${w.scale && w.scale !== 'n/a' ? `<span class="pill xs">${esc(w.scale)}</span>` : ''}${w.rpe ? `<span class="pill xs">RPE ${esc(w.rpe)}</span>` : ''}</div>${w.desc ? `<pre dir="auto">${esc(w.desc)}</pre>` : ''}${w.notes ? `<div class="notes" dir="auto">${esc(w.notes)}</div>` : ''}${actions ? `<button class="link" data-act="delWorkout" data-id="${esc(w.id)}" style="padding:6px 0 0;font-size:13px">Delete</button>` : ''}</div>`;
-}
 function viewFood() {
   const date = S.date, d = day(date);
   const meals = MEALS.map(m => {
@@ -1064,10 +1311,13 @@ function viewTrain() {
       return `<button class="pr" data-act="openPR" data-name="${esc(n)}" data-kind="lift"><span class="n">${esc(n)}</span>${one ? `<span class="b">${one.kg} kg</span><span class="d">${one.reps || 1}RM · ${fmtDate(one.date, { day: 'numeric', month: 'short' })}</span>` : '<span class="b none">No PR yet</span>'}</button>`; }).join('')
     : [...BENCH.map(b => ({ name: b[0], unit: b[1] })), ...Object.values(S.log.prs).filter(p => p.kind === 'bench' && !BENCH.some(b => b[0] === p.name)).map(p => ({ name: p.name, unit: p.unit }))].map(it => { const pr = S.log.prs[prId(it.name)], b = bestOf(pr);
       return `<button class="pr" data-act="openPR" data-name="${esc(it.name)}" data-kind="bench" data-unit="${it.unit}"><span class="n">${esc(it.name)}</span>${b ? `<span class="b">${fmtScore(b, pr.unit)}</span><span class="d">${esc(b.scale || 'Rx')} · ${fmtDate(b.date, { day: 'numeric', month: 'short' })}</span>` : '<span class="b none">Not done yet</span>'}</button>`; }).join('');
+  const recent = allSessions().filter(x => x.date !== S.date), shown = recent.slice(0, S.moreSess ? 40 : 4), moves = movesList();
   return `
-    <h2 style="margin-top:8px">${S.date === ymd() ? 'Today' : esc(fmtDate(S.date))}<button data-act="workout">+ Log workout</button></h2>
-    <div class="card">${d.workouts.length ? d.workouts.map(x => workoutHTML(x, true)).join('') : '<div class="empty">No training logged for this day.</div>'}</div>
-    <div class="small muted">${last30} session${last30 === 1 ? '' : 's'} in the last 30 days.</div>
+    ${weekCard(S.date)}
+    <h2>${S.date === ymd() ? 'Today' : esc(fmtDate(S.date, { weekday: 'long', day: 'numeric', month: 'short' }))}<button data-act="workout">+ Log workout</button></h2>
+    ${d.workouts.length ? d.workouts.map(w => `<div class="card">${sessionCard(S.date, w)}</div>`).join('') : '<div class="card"><div class="empty">No training logged for this day.</div></div>'}
+    ${shown.length ? `<h2>Recent sessions<span>${last30} in 30 days</span></h2>${shown.map(x => `<div class="card">${sessionCard(x.date, x.w)}</div>`).join('')}${recent.length > shown.length ? '<button class="btn block" data-act="moreSess">Show older sessions</button>' : ''}` : ''}
+    ${moves ? `<h2>Your movements<span>tap one to see progress</span></h2><div class="card" style="padding:4px 18px">${moves}</div>` : ''}
     <h2>PR board<button data-act="newPR">+ Add movement</button></h2>
     <div class="card"><div class="seg" role="group"><button data-act="prMode" data-mode="lift" aria-pressed="${S.prMode === 'lift'}">Lifts</button><button data-act="prMode" data-mode="bench" aria-pressed="${S.prMode === 'bench'}">Benchmark WODs</button></div><div class="prgrid">${list}</div></div>`;
 }
@@ -1240,6 +1490,7 @@ $('week').addEventListener('click', e => { const b = e.target.closest('button[da
 document.addEventListener('click', e => {
   const cb = e.target.closest('.chips button');
   if (cb) { const field = cb.parentElement.dataset.field, v = Number(cb.dataset.v); return editDay(S.date, x => { x[field] = x[field] === v ? null : v; }); }
+  const wd = e.target.closest('.wk-days button[data-day]'); if (wd) { if (!wd.disabled) goDate(wd.dataset.day); return; }
   const b = e.target.closest('[data-act], nav button'); if (!b) return;
   if (b.dataset.tab) return go(b.dataset.tab);
   const a = b.dataset.act;
@@ -1271,8 +1522,11 @@ document.addEventListener('click', e => {
   if (a === 'checkin') return sheetCheckin();
   if (a === 'dayType') return editDay(S.date, x => { x.train = b.dataset.v === '1'; });
   if (a === 'workout') return sheetWorkout();
-  if (a === 'logWatch') { const x = ((H(S.date) || {}).exercise || []).find(z => z.start === b.dataset.start); if (x) sheetWorkout({ kind: /strength|weight/i.test(x.type) ? 'Strength' : 'Class', name: niceType(x.type), notes: `${Math.round(x.minutes || 0)} min on the watch${x.kcal ? ', ' + Math.round(x.kcal) + ' kcal' : ''}`, watch: x.start }); return; }
-  if (a === 'delWorkout') { if (!b.dataset.arm) { b.dataset.arm = 1; b.textContent = 'Tap again to delete'; return; } return editDay(S.date, x => { x.workouts = x.workouts.filter(w => w.id !== b.dataset.id); }); }
+  if (a === 'logWatch') { const x = ((H(S.date) || {}).exercise || []).find(z => z.start === b.dataset.start); if (x) sheetWorkout({ kind: /strength|weight/i.test(x.type) ? 'Gym' : 'Class', name: niceType(x.type), time: new Date(x.start).toTimeString().slice(0, 5), minutes: Math.round(x.minutes || 0) || null, kcal: x.kcal ? Math.round(x.kcal) : null, watch: x.start }); return; }
+  if (a === 'delWorkout') { if (!b.dataset.arm) { b.dataset.arm = 1; b.textContent = 'Tap again to delete'; return; } return editDay(b.dataset.date || S.date, x => { x.workouts = x.workouts.filter(w => w.id !== b.dataset.id); }); }
+  if (a === 'editWorkout') { const dt = b.dataset.date || S.date, w = day(dt).workouts.find(x => x.id === b.dataset.id); if (w) sheetWorkout(w, dt); return; }
+  if (a === 'move') return sheetMove(b.dataset.key);
+  if (a === 'moreSess') { S.moreSess = true; return render(); }
   if (a === 'catAll') { S.catAll = true; $('catList').hidden = false; b.hidden = true; return; }
   if (a === 'prMode') { S.prMode = b.dataset.mode; return render(); }
   if (a === 'openPR') return sheetPR(b.dataset.name, b.dataset.kind, b.dataset.unit);
