@@ -194,6 +194,14 @@ details summary::-webkit-details-marker { display: none; }
 .legend { display: flex; gap: 12px; font-size: 12px; color: var(--muted); flex-wrap: wrap; }
 .legend i { display: inline-block; width: 8px; height: 8px; border-radius: 50%; margin-right: 5px; vertical-align: 0; }
 .legend i.ln { width: 14px; height: 3px; border-radius: 2px; vertical-align: 3px; }
+/* plan */
+.planbtn { display: flex; width: 100%; align-items: center; gap: 12px; border: 0; text-align: left; color: var(--text); background: linear-gradient(135deg, #1f2a12, var(--panel) 70%); }
+.planbtn > span { flex: 1; display: flex; flex-direction: column; gap: 2px; }
+.planbtn b { font-family: var(--display); font-size: 18px; }
+.planbtn svg { width: 20px; height: 20px; fill: none; stroke: var(--accent); stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+.mbud { margin: 10px 0 2px; height: 4px; }
+h2 span.over { color: var(--warn); }
+.planpages img { display: block; width: 100%; border-radius: 12px; margin-top: 12px; background: #F2EEE6; }
 /* sessions */
 .sess + .sess { border-top: 1px solid var(--line); margin-top: 18px; padding-top: 18px; }
 .sess-h { display: flex; justify-content: space-between; align-items: center; gap: 10px; }
@@ -331,6 +339,8 @@ const DATA_REPO = 'guytamar96-gt/training-data'; // private: Guy's daily logs an
 const MEALS = ['Breakfast', 'Lunch', 'Dinner', 'Snacks'];
 const COLS = ['id', 'barcode', 'name', 'brand', 'kcal', 'protein', 'carbs', 'fat', 'sugar', 'sat_fat', 'fibre', 'sodium_mg', 'serving_g', 'source', 'added'];
 const NUMS = ['kcal', 'protein', 'carbs', 'fat', 'sugar', 'sat_fat', 'fibre', 'sodium_mg', 'serving_g'];
+// per-meal kcal budgets from the nutrition plan (sauces count under Snacks; the training snack adds 250)
+const DEFAULT_MEALS = { rest: { Breakfast: 500, Lunch: 650, Dinner: 550, Snacks: 50 }, train: { Breakfast: 500, Lunch: 650, Dinner: 550, Snacks: 300 } };
 const DEFAULT_TARGETS = { rest: { kcal: 1750, p: 150, c: 165, f: 55, water: 2800 }, train: { kcal: 2000, p: 170, c: 205, f: 55, water: 3500 }, steps: 9000, sleep: 7.5 };
 const LS = { cat: 'fs-catalogue', pending: 'fs-pending', days: 'fs-days', token: 'fs-token', targets: 'fs-targets', train: 'fs-train', sha: 'fs-sha',
   log: 'fs-log', lsha: 'fs-log-sha', ldirty: 'fs-log-dirty', health: 'fs-health', migrated: 'fs-migrated-v1' };
@@ -437,7 +447,7 @@ function totals(items) { const t = { kcal: 0, p: 0, c: 0, f: 0 }; for (const e o
 function targetsFor(date) {
   const d = day(date), tr = isTrain(d), key = tr ? 'train' : 'rest', mine = S.targets[key], coach = S.log.coach || {}, c = coach[key] || {};
   const pick = (a, b) => a != null ? a : b, D = DEFAULT_TARGETS[key];
-  return { train: tr, kcal: pick(c.kcal, mine.kcal), p: pick(c.p, mine.p), c: pick(c.c, pick(mine.c, D.c)), f: pick(c.f, pick(mine.f, D.f)), water: pick(c.water_ml, mine.water), steps: pick(coach.steps, S.targets.steps), sleep: pick(coach.sleep_h, S.targets.sleep), coach: !!coach[key] };
+  return { train: tr, kcal: pick(c.kcal, mine.kcal), p: pick(c.p, mine.p), c: pick(c.c, pick(mine.c, D.c)), f: pick(c.f, pick(mine.f, D.f)), water: pick(c.water_ml, mine.water), steps: pick(coach.steps, S.targets.steps), sleep: pick(coach.sleep_h, S.targets.sleep), meals: Object.assign({}, DEFAULT_MEALS[key], (coach.meals || {})[key] || {}), coach: !!coach[key] };
 }
 // watch values win where the relay has them; typed values fill the gaps
 function H(date) { return S.health[date] || null; }
@@ -1209,6 +1219,40 @@ function sheetMeasure() {
   });
 }
 
+// ---------- nutrition plan (page images in the private repo, cached for offline) ----------
+const PLAN_CACHE = 'guy-plan-v1';
+async function planFile(path, fresh) {
+  const key = 'https://plan.local/' + path;
+  let cache = null; try { cache = await caches.open(PLAN_CACHE); } catch (e) {}
+  if (cache && !fresh) { const hit = await cache.match(key); if (hit) return hit.blob(); }
+  const r = await fetch('https://api.github.com/repos/' + DATA_REPO + '/contents/' + path, { headers: { Accept: 'application/vnd.github.raw', Authorization: 'Bearer ' + S.token, 'X-GitHub-Api-Version': '2022-11-28' }, cache: 'no-store' });
+  if (!r.ok) { const e = new Error('plan ' + r.status); e.status = r.status; throw e; }
+  const blob = await r.blob();
+  if (cache) cache.put(key, new Response(blob)).catch(() => {});
+  return blob;
+}
+const planUrls = [];
+async function sheetPlan() {
+  openSheet('My nutrition plan', `<div class="small muted" style="margin-top:4px">Pinch to zoom. Saved on this phone after the first open.</div><div class="planpages" id="planPages"><div class="msg">Loading your plan…</div></div><button class="btn block" data-act="planPdf">Download the PDF</button>`);
+  onClose = () => { planUrls.splice(0).forEach(u => URL.revokeObjectURL(u)); };
+  const box = $('planPages');
+  if (!S.token) { box.innerHTML = '<div class="msg warn">Add your GitHub key in Settings to open your plan. It is kept in your private repo.</div>'; return; }
+  try {
+    let n = 6; try { n = JSON.parse(await (await planFile('plan/plan.json', navigator.onLine)).text()).pages || n; } catch (e) {}
+    const blobs = await Promise.all(Array.from({ length: n }, (_, i) => planFile(`plan/page-${i + 1}.jpg`)));
+    if (!$('planPages')) return;
+    box.innerHTML = blobs.map((b, i) => { const u = URL.createObjectURL(b); planUrls.push(u); return `<img src="${u}" alt="Nutrition plan, page ${i + 1}">`; }).join('');
+  } catch (e) {
+    if ($('planPages')) box.innerHTML = `<div class="msg err">${e.status === 404 ? 'Your plan isn’t in training-data yet. Ask your coach to add it.' : e.status === 401 || e.status === 403 ? 'GitHub key not accepted. Check it in Settings.' : 'Couldn’t load the plan. Check your connection and try again.'}</div>`;
+  }
+}
+async function planPdf(btn) {
+  btn.disabled = true; const t = btn.textContent; btn.textContent = 'Downloading…';
+  try { const u = URL.createObjectURL(await planFile('plan/nutrition-plan.pdf')); const l = document.createElement('a'); l.href = u; l.download = 'Guy-nutrition-plan.pdf'; document.body.appendChild(l); l.click(); l.remove(); setTimeout(() => URL.revokeObjectURL(u), 5000); }
+  catch (e) { toast('Couldn’t download the plan'); }
+  btn.disabled = false; btn.textContent = t;
+}
+
 // ---------- views ----------
 function recentFoods() {
   const seen = new Set(), out = [], all = foods();
@@ -1294,16 +1338,18 @@ function chips(field, label, value, lo, hi) {
 }
 function viewFood() {
   const date = S.date, d = day(date);
+  const MB = targetsFor(date).meals;
   const meals = MEALS.map(m => {
-    const es = d.food.filter(e => (e.meal || 'Snacks') === m);
-    return `<h2>${m}<span>${es.length ? Math.round(totals(es).kcal) + ' kcal' : ''}</span></h2>
-      <div class="card" style="padding:6px 18px 12px"><div class="list">${es.map(e => `<div class="item tap" data-act="entry" data-id="${esc(e.id)}"><div class="t"><div class="n" dir="auto">${esc(e.name)}</div><div class="s">${e.grams ? e.grams + ' g · ' : e.portions ? e.portions + (e.portions === 1 ? ' portion · ' : ' portions · ') : ''}P ${Math.round(e.p || 0)} · C ${Math.round(e.c || 0)} · F ${Math.round(e.f || 0)}</div></div><div class="k">${Math.round(e.kcal || 0)}<small>kcal</small></div></div>`).join('') || '<div class="empty">Nothing yet</div>'}</div>
+    const es = d.food.filter(e => (e.meal || 'Snacks') === m), k = Math.round(totals(es).kcal), bud = MB[m];
+    return `<h2>${m}<span class="${bud && k > bud ? 'over' : ''}">${bud ? `${k} / ${bud} kcal` : es.length ? k + ' kcal' : ''}</span></h2>
+      <div class="card" style="padding:6px 18px 12px">${bud ? `<div class="bar mbud"><i style="width:${Math.min(100, k / bud * 100)}%;background:${k > bud ? 'var(--warn)' : 'var(--accent)'}"></i></div>` : ''}<div class="list">${es.map(e => `<div class="item tap" data-act="entry" data-id="${esc(e.id)}"><div class="t"><div class="n" dir="auto">${esc(e.name)}</div><div class="s">${e.grams ? e.grams + ' g · ' : e.portions ? e.portions + (e.portions === 1 ? ' portion · ' : ' portions · ') : ''}P ${Math.round(e.p || 0)} · C ${Math.round(e.c || 0)} · F ${Math.round(e.f || 0)}</div></div><div class="k">${Math.round(e.kcal || 0)}<small>kcal</small></div></div>`).join('') || '<div class="empty">Nothing yet</div>'}</div>
       <div class="row" style="margin-top:4px"><button class="btn sm" data-act="addFood" data-meal="${m}" style="flex:0 0 auto">+ Add</button><span></span>${es.length ? `<button class="link" data-act="saveMeal" data-meal="${m}" style="flex:0 0 auto;font-size:13px">Save as meal</button>` : ''}</div></div>`;
   }).join('');
   const tpls = Object.entries(S.log.templates || {}).sort((a, b) => (a[1].name || '').localeCompare(b[1].name || ''));
   const list = foods().sort((a, b) => a.name.localeCompare(b.name));
   return `
     ${ringCard(date)}
+    <button class="card planbtn" data-act="plan"><span><b>My nutrition plan</b><span class="small muted">Meals, swaps and portions · phase ${ymd() < '2027-01-17' ? 1 : 2}</span></span><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 18l6-6-6-6"/></svg></button>
     ${meals}
     <h2>Saved meals<span>one tap to log</span></h2>
     <div class="card" style="padding:6px 18px"><div class="list">${tpls.map(([id, t]) => `<div class="item tap" data-act="template" data-id="${esc(id)}"><div class="t"><div class="n" dir="auto">${esc(t.name)}</div><div class="s">${t.items.length} items · P ${Math.round(totals(t.items).p)} g</div></div><div class="k">${Math.round(totals(t.items).kcal)}<small>kcal</small></div></div>`).join('') || '<div class="empty">Log a meal you eat often, then tap “Save as meal” under it.</div>'}</div></div>
@@ -1537,6 +1583,8 @@ document.addEventListener('click', e => {
   if (a === 'delWorkout') { if (!b.dataset.arm) { b.dataset.arm = 1; b.textContent = 'Tap again to delete'; return; } return editDay(b.dataset.date || S.date, x => { x.workouts = x.workouts.filter(w => w.id !== b.dataset.id); }); }
   if (a === 'editWorkout') { const dt = b.dataset.date || S.date, w = day(dt).workouts.find(x => x.id === b.dataset.id); if (w) sheetWorkout(w, dt); return; }
   if (a === 'move') return sheetMove(b.dataset.key);
+  if (a === 'plan') return sheetPlan();
+  if (a === 'planPdf') return planPdf(b);
   if (a === 'placeFilter') { S.placeFilter = b.dataset.v; return render(); }
   if (a === 'moreSess') { S.moreSess = true; return render(); }
   if (a === 'catAll') { S.catAll = true; $('catList').hidden = false; b.hidden = true; return; }
