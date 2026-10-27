@@ -679,7 +679,7 @@ async function startCamera() {
   const v = $('video'); if (!v) return;
   const idle = $('idle'); if (idle) idle.innerHTML = '<div class="small">Starting camera…</div>';
   try {
-    CAM.stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: { ideal: 'environment' }, width: { ideal: 1280 }, height: { ideal: 720 } }, audio: false });
+    CAM.stream = await openBackCamera();
   } catch (e) {
     if (idle) idle.innerHTML = `<div>${e && e.name === 'NotAllowedError' ? 'Camera permission was blocked. Allow the camera for this site in your browser settings, then try again.' : 'Couldn’t open the camera.'}</div><button class="btn" data-act="startCam">Try again</button>`;
     return;
@@ -693,6 +693,8 @@ async function startCamera() {
   const track = CAM.stream.getVideoTracks()[0];
   const caps = track && track.getCapabilities ? track.getCapabilities() : {};
   if (caps.torch && $('torch')) $('torch').hidden = false;
+  await sharpen(track, caps);
+  v.onclick = () => refocus(track, caps);
   if ('BarcodeDetector' in window) {
     try {
       const fmts = await BarcodeDetector.getSupportedFormats();
@@ -704,6 +706,44 @@ async function startCamera() {
   if (!CAM.detector) await startZXing(v);
   else loopDetect(v);
 }
+// Samsung phones often hand back the wide-angle lens for "environment", which can't focus up close.
+// Prefer the main back camera (Android labels it "camera2 0, facing back") and remember it.
+const CAM_RES = { width: { ideal: 1920 }, height: { ideal: 1080 } };
+async function openBackCamera() {
+  let saved = null; try { saved = localStorage.getItem('fs-cam'); } catch (e) {}
+  if (saved) {
+    try { return await navigator.mediaDevices.getUserMedia({ video: Object.assign({ deviceId: { exact: saved } }, CAM_RES), audio: false }); } catch (e) {}
+  }
+  const s = await navigator.mediaDevices.getUserMedia({ video: Object.assign({ facingMode: { ideal: 'environment' } }, CAM_RES), audio: false });
+  try {
+    const cur = s.getVideoTracks()[0].getSettings().deviceId;
+    const back = (await navigator.mediaDevices.enumerateDevices()).filter(d => d.kind === 'videoinput' && /back|rear|environment/i.test(d.label));
+    const main = back.find(d => /\b0\b/.test(d.label)) || null;
+    if (main && main.deviceId !== cur) {
+      s.getTracks().forEach(t => t.stop());
+      const m = await navigator.mediaDevices.getUserMedia({ video: Object.assign({ deviceId: { exact: main.deviceId } }, CAM_RES), audio: false });
+      try { localStorage.setItem('fs-cam', main.deviceId); } catch (e) {}
+      return m;
+    }
+    if (cur) try { localStorage.setItem('fs-cam', cur); } catch (e) {}
+  } catch (e) {}
+  return s;
+}
+// continuous autofocus, plus about 2x zoom so the phone can sit far enough back to focus
+async function sharpen(track, caps) {
+  if (!track) return;
+  const adv = {};
+  if (Array.isArray(caps.focusMode) && caps.focusMode.includes('continuous')) adv.focusMode = 'continuous';
+  if (caps.zoom && caps.zoom.max >= 1.5) adv.zoom = Math.min(2, caps.zoom.max);
+  if (Object.keys(adv).length) try { await track.applyConstraints({ advanced: [adv] }); } catch (e) {}
+}
+async function refocus(track, caps) {
+  if (!track || track.readyState !== 'live' || !Array.isArray(caps.focusMode)) return;
+  try {
+    if (caps.focusMode.includes('single-shot')) await track.applyConstraints({ advanced: [{ focusMode: 'single-shot' }] });
+    if (caps.focusMode.includes('continuous')) setTimeout(() => track.applyConstraints({ advanced: [{ focusMode: 'continuous' }] }).catch(() => {}), 800);
+  } catch (e) {}
+}
 function loopDetect(v) {
   const tick = async () => {
     if (!CAM.stream) return;
@@ -712,7 +752,7 @@ function loopDetect(v) {
       try { const r = await CAM.detector.detect(v); const hit = r && r.find(x => /^\d{8,14}$/.test(x.rawValue) && fresh(x.rawValue)); if (hit) { onCode(hit.rawValue); CAM.busy = false; return; } } catch (e) {}
       CAM.busy = false;
     }
-    CAM.raf = setTimeout(tick, 120);
+    CAM.raf = setTimeout(tick, 50);
   };
   tick();
 }
@@ -732,7 +772,7 @@ async function startZXing(v) {
       c.width = w; c.height = bh; ctx.drawImage(v, 0, Math.round((h - bh) / 2), w, bh, 0, 0, w, bh);
       try { const r = reader.decode(new Z.BinaryBitmap(new Z.HybridBinarizer(new Z.HTMLCanvasElementLuminanceSource(c)))); if (r && /^\d{8,14}$/.test(r.getText()) && fresh(r.getText())) return onCode(r.getText()); } catch (e) {}
     }
-    CAM.raf = setTimeout(tick, 150);
+    CAM.raf = setTimeout(tick, 80);
   };
   tick();
 }
@@ -1312,7 +1352,7 @@ function viewScan() {
     <div class="viewer">
       <video id="video" playsinline muted></video>
       <div class="corner tl"></div><div class="corner tr"></div><div class="corner bl"></div><div class="corner br"></div><div class="line"></div>
-      <div class="cap">Reading automatically</div>
+      <div class="cap">Reading automatically · tap to focus</div>
       <div class="idle" id="idle"><div class="small">Point the camera at a barcode</div><button class="btn primary" data-act="startCam">Start camera</button></div>
       <button class="torch" id="torch" data-act="torch" aria-label="Torch" hidden><svg viewBox="0 0 24 24"><path d="M9 2h6l-1 7h-4z"/><path d="M10 9v11a2 2 0 0 0 4 0V9"/></svg></button>
     </div>
