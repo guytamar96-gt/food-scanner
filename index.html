@@ -139,6 +139,7 @@ label.f input, label.f select, label.f textarea { margin-top: 6px; background: v
 .lbl { font-size: 12px; font-weight: 600; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); margin: 18px 0 10px; display: block; }
 .stepper { display: flex; align-items: center; gap: 8px; height: 60px; border-radius: 16px; background: var(--panel); padding: 0 8px; }
 .stepper button { width: 44px; height: 44px; border-radius: 12px; border: 0; background: var(--panel2); font-size: 22px; flex: none; }
+#qA::-webkit-inner-spin-button, #qA::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
 .stepper input { flex: 1; min-width: 0; background: none; border: 0; text-align: center; font-family: var(--display); font-size: 24px; font-weight: 700; padding: 0; }
 .stepper .unit { font-size: 15px; color: var(--muted); margin-right: 4px; }
 .keep { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-top: 16px; padding: 14px 16px; background: var(--panel2); border-radius: 14px; font-size: 15px; }
@@ -933,33 +934,60 @@ function sheetAddFood(meal) {
 }
 function sheetQuick(meal, entry, name0) {
   const e = entry || (name0 ? { name: name0 } : {});
+  // the typed numbers are for 100 g or for 1 portion; the amount eaten scales them. Old entries count as 1 portion.
+  const base = e.base || { kcal: e.kcal ?? null, p: e.p ?? null, c: e.c ?? null, f: e.f ?? null, unit: 'portion' };
+  let unit = base.unit, amt = e.amount ?? (unit === 'g' ? 100 : 1);
+  const v = x => x == null ? '' : x;
   openSheet(entry ? 'Edit entry' : 'Quick add', `
     <label class="f">What was it<input type="text" id="qN" dir="auto" value="${esc(e.name || '')}" placeholder="e.g. Shawarma plate"></label>
-    <div class="grid4"><label class="f">Calories<input type="number" id="qK" inputmode="numeric" value="${e.kcal ?? ''}"></label><label class="f">Protein<input type="number" id="qP" inputmode="decimal" value="${e.p ?? ''}"></label><label class="f">Carbs<input type="number" id="qC" inputmode="decimal" value="${e.c ?? ''}"></label><label class="f">Fat<input type="number" id="qF" inputmode="decimal" value="${e.f ?? ''}"></label></div>
-    ${entry ? '' : `<label class="f">How many grams (optional)<input type="number" id="qG" inputmode="decimal" min="0" step="any" placeholder="Leave empty for 1 portion"></label>
-    <label class="keep"><span>Save to my foods<small id="qKeepS">Saved as 1 portion. Add grams to save it per 100 g.</small></span><input type="checkbox" id="qKeep" checked></label>`}
+    <span class="lbl">Numbers are for</span>
+    <div class="seg" id="qU" role="group" aria-label="Numbers are for"><button type="button" data-u="g" aria-pressed="${unit === 'g'}">100 g</button><button type="button" data-u="portion" aria-pressed="${unit === 'portion'}">1 portion</button></div>
+    <div class="grid4"><label class="f">Calories<input type="number" id="qK" inputmode="numeric" value="${v(base.kcal)}"></label><label class="f">Protein<input type="number" id="qP" inputmode="decimal" value="${v(base.p)}"></label><label class="f">Carbs<input type="number" id="qC" inputmode="decimal" value="${v(base.c)}"></label><label class="f">Fat<input type="number" id="qF" inputmode="decimal" value="${v(base.f)}"></label></div>
+    <label class="f"><span id="qAL">How much I ate</span>
+      <div class="stepper"><button type="button" id="qM" aria-label="Less">−</button><input type="number" id="qA" inputmode="decimal" min="0" step="any" value="${amt}" style="background:none;border:0;padding:0;appearance:textfield"><button type="button" id="qPl" aria-label="More">+</button></div></label>
+    <div class="msg" id="qSum" style="margin-top:12px"></div>
+    ${entry ? '' : `<label class="keep"><span>Save to my foods<small>Next time, pick it from your foods and type the amount.</small></span><input type="checkbox" id="qKeep" checked></label>`}
     <span class="lbl">Meal</span>
-    <div class="seg" role="group" aria-label="Meal">${MEALS.map(m => `<button type="button" data-meal="${m}" aria-pressed="${m === (e.meal || meal)}">${m === 'Snacks' ? 'Snack' : m}</button>`).join('')}</div>
+    <div class="seg" id="qMeal" role="group" aria-label="Meal">${MEALS.map(m => `<button type="button" data-meal="${m}" aria-pressed="${m === (e.meal || meal)}">${m === 'Snacks' ? 'Snack' : m}</button>`).join('')}</div>
     <button class="btn primary block" id="qSave" style="margin-top:18px">${entry ? 'Update' : 'Add'}</button>
     ${entry ? '<button class="btn danger block" id="qDel">Remove</button>' : ''}`, el => {
     let m = e.meal || meal;
-    el.querySelectorAll('.seg button').forEach(b => b.onclick = () => { m = b.dataset.meal; el.querySelectorAll('.seg button').forEach(x => x.setAttribute('aria-pressed', String(x === b))); });
-    const qG = el.querySelector('#qG'), keepS = el.querySelector('#qKeepS');
-    if (qG) qG.oninput = () => { keepS.textContent = num(qG.value) > 0 ? `Saved per 100 g, so next time you can enter any amount.` : 'Saved as 1 portion. Add grams to save it per 100 g.'; };
-    el.querySelector('#qSave').onclick = () => {
+    el.querySelectorAll('#qMeal button').forEach(b => b.onclick = () => { m = b.dataset.meal; el.querySelectorAll('#qMeal button').forEach(x => x.setAttribute('aria-pressed', String(x === b))); });
+    const read = () => {
       const p = num($('qP').value) || 0, c = num($('qC').value) || 0, f = num($('qF').value) || 0;
       let k = num($('qK').value); if (k == null) k = Math.round(p * 4 + c * 4 + f * 9);
-      if (!k) return $('qK').focus();
+      const a = num($('qA').value), x = a > 0 ? (unit === 'g' ? a / 100 : a) : 0;
+      return { k, p, c, f, a, x, eat: { kcal: Math.round(k * x), p: r1(p * x), c: r1(c * x), f: r1(f * x) } };
+    };
+    const upd = () => {
+      $('qAL').textContent = unit === 'g' ? 'How much I ate, grams' : 'How many portions I ate';
+      const r = read();
+      $('qSum').innerHTML = r.k && r.x ? `You’ll log <b>${r.eat.kcal} kcal</b> · ${r.eat.p} g protein · ${r.eat.c} g carbs · ${r.eat.f} g fat` : 'Type the calories and how much you ate.';
+    };
+    el.querySelectorAll('#qU button').forEach(b => b.onclick = () => {
+      if (b.dataset.u === unit) return;
+      unit = b.dataset.u; el.querySelectorAll('#qU button').forEach(x => x.setAttribute('aria-pressed', String(x === b)));
+      $('qA').value = unit === 'g' ? 100 : 1; upd();
+    });
+    const step = d => { const a = num($('qA').value) || 0, s = unit === 'g' ? 10 : 0.5; $('qA').value = r1(Math.max(0, Math.round((a + d * s) / s) * s)); upd(); };
+    el.querySelector('#qM').onclick = () => step(-1); el.querySelector('#qPl').onclick = () => step(1);
+    ['qK', 'qP', 'qC', 'qF', 'qA'].forEach(id => el.querySelector('#' + id).oninput = upd);
+    upd();
+    el.querySelector('#qSave').onclick = () => {
+      const r = read();
+      if (!r.k) return $('qK').focus();
+      if (!(r.a > 0)) return $('qA').focus();
       const date = entry ? entry.date : S.date, name = $('qN').value.trim(), time = e.time || new Date().toTimeString().slice(0, 5);
-      let rec = { id: e.id || uid(), meal: m, name: name || 'Quick add', kcal: Math.round(k), p, c, f, quick: true, time };
+      const b = { kcal: Math.round(r.k), p: r.p, c: r.c, f: r.f, unit };
+      let rec = { id: e.id || uid(), meal: m, name: name || 'Quick add', kcal: r.eat.kcal, p: r.eat.p, c: r.eat.c, f: r.eat.f, quick: true, base: b, amount: r1(r.a), time };
       const keep = !entry && $('qKeep').checked;
       if (keep && !name) return $('qN').focus();
       if (keep) {
-        const g = num($('qG').value), x = g > 0 ? 100 / g : 1;
         let id = 'u-' + slug(name); if (foods().some(z => z.id === id)) id += '-' + uid().slice(-4);
-        const food = { id, barcode: '', name, brand: '', kcal: Math.round(k * x), protein: r1(p * x), carbs: r1(c * x), fat: r1(f * x), sugar: null, sat_fat: null, fibre: null, sodium_mg: null, serving_g: g > 0 ? r1(g) : null, source: g > 0 ? 'typed' : 'portion', added: ymd() };
+        const g = unit === 'g';
+        const food = { id, barcode: '', name, brand: '', kcal: b.kcal, protein: r1(b.p), carbs: r1(b.c), fat: r1(b.f), sugar: null, sat_fat: null, fibre: null, sodium_mg: null, serving_g: g ? r1(r.a) : null, source: g ? 'typed' : 'portion', added: ymd() };
         putFood(food);
-        rec = { id: rec.id, meal: m, foodId: id, name, brand: '', barcode: '', grams: g > 0 ? r1(g) : null, portions: g > 0 ? undefined : 1, kcal: rec.kcal, p, c, f, per100: { kcal: food.kcal, p: food.protein, c: food.carbs, f: food.fat }, serving_g: food.serving_g, time };
+        rec = { id: rec.id, meal: m, foodId: id, name, brand: '', barcode: '', grams: g ? r1(r.a) : null, portions: g ? undefined : r1(r.a), kcal: rec.kcal, p: rec.p, c: rec.c, f: rec.f, per100: { kcal: food.kcal, p: food.protein, c: food.carbs, f: food.fat }, serving_g: food.serving_g, time };
       }
       editDay(date, d => { const i = d.food.findIndex(x => x.id === rec.id); if (i >= 0) d.food[i] = rec; else d.food.push(rec); });
       closeSheet(); toast(entry ? 'Updated' : keep ? `Saved · added ${rec.kcal} kcal` : `Added ${rec.kcal} kcal`);
@@ -1423,7 +1451,7 @@ function viewFood() {
   const meals = MEALS.map(m => {
     const es = d.food.filter(e => (e.meal || 'Snacks') === m), k = Math.round(totals(es).kcal), bud = MB[m];
     return `<h2>${m}<span class="${bud && k > bud ? 'over' : ''}">${bud ? `${k} / ${bud} kcal` : es.length ? k + ' kcal' : ''}</span></h2>
-      <div class="card" style="padding:6px 18px 12px">${bud ? `<div class="bar mbud"><i style="width:${Math.min(100, k / bud * 100)}%;background:${k > bud ? 'var(--warn)' : 'var(--accent)'}"></i></div>` : ''}<div class="list">${es.map(e => `<div class="item tap" data-act="entry" data-id="${esc(e.id)}"><div class="t"><div class="n" dir="auto">${esc(e.name)}</div><div class="s">${e.grams ? e.grams + ' g · ' : e.portions ? e.portions + (e.portions === 1 ? ' portion · ' : ' portions · ') : ''}P ${Math.round(e.p || 0)} · C ${Math.round(e.c || 0)} · F ${Math.round(e.f || 0)}</div></div><div class="k">${Math.round(e.kcal || 0)}<small>kcal</small></div></div>`).join('') || '<div class="empty">Nothing yet</div>'}</div>
+      <div class="card" style="padding:6px 18px 12px">${bud ? `<div class="bar mbud"><i style="width:${Math.min(100, k / bud * 100)}%;background:${k > bud ? 'var(--warn)' : 'var(--accent)'}"></i></div>` : ''}<div class="list">${es.map(e => `<div class="item tap" data-act="entry" data-id="${esc(e.id)}"><div class="t"><div class="n" dir="auto">${esc(e.name)}</div><div class="s">${e.grams ? e.grams + ' g · ' : e.base && e.base.unit === 'g' ? e.amount + ' g · ' : e.base && e.amount !== 1 ? e.amount + ' portions · ' : e.portions ? e.portions + (e.portions === 1 ? ' portion · ' : ' portions · ') : ''}P ${Math.round(e.p || 0)} · C ${Math.round(e.c || 0)} · F ${Math.round(e.f || 0)}</div></div><div class="k">${Math.round(e.kcal || 0)}<small>kcal</small></div></div>`).join('') || '<div class="empty">Nothing yet</div>'}</div>
       <div class="row" style="margin-top:4px"><button class="btn sm" data-act="addFood" data-meal="${m}" style="flex:0 0 auto">+ Add</button><span></span>${es.length ? `<button class="link" data-act="saveMeal" data-meal="${m}" style="flex:0 0 auto;font-size:13px">Save as meal</button>` : ''}</div></div>`;
   }).join('');
   const tpls = Object.entries(S.log.templates || {}).sort((a, b) => (a[1].name || '').localeCompare(b[1].name || ''));
