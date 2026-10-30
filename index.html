@@ -226,6 +226,12 @@ h2 span.over { color: var(--warn); }
 .mv .t { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 1px; }
 .mv .n { font-weight: 600; overflow-wrap: anywhere; }
 .mv .s { font-size: 13px; color: var(--muted); font-variant-numeric: tabular-nums; overflow-wrap: anywhere; }
+.lset { display: grid; grid-template-columns: 34px 1fr 1fr; gap: 6px 8px; align-items: center; padding: 2px 0 12px; border-bottom: 1px solid var(--hair); }
+.lset .h { font-size: 11px; font-weight: 600; letter-spacing: .06em; text-transform: uppercase; color: var(--muted); }
+.lset .n { font-family: var(--display); font-weight: 700; color: var(--muted); text-align: center; font-variant-numeric: tabular-nums; }
+.lset input { height: 44px; padding: 0 12px; text-align: center; font-family: var(--display); font-size: 17px; font-weight: 700; background: var(--panel2); }
+.lset input:focus { border-color: var(--pc, var(--accent)); }
+.lset .add { grid-column: 2 / -1; height: 38px; border-radius: 12px; border: 1px dashed var(--line); background: none; color: var(--muted); font-weight: 600; font-size: 13px; }
 .cmp { flex: none; font-size: 12px; font-weight: 700; padding: 4px 9px; border-radius: 99px; background: var(--panel2); color: var(--muted); white-space: nowrap; font-variant-numeric: tabular-nums; }
 .cmp.up { color: var(--accent); background: rgba(200, 241, 53, .12); }
 .cmp.down { color: var(--warn); background: rgba(245, 184, 61, .1); }
@@ -1114,10 +1120,15 @@ function sessionStats(w) {
 function fmtKg(v) { return v >= 10000 ? r1(v / 1000) + ' t' : Math.round(v).toLocaleString() + ' kg'; }
 function sessionCard(date, w, actions = true) {
   const st = sessionStats(w), meta = [wTime(w), w.minutes ? w.minutes + ' min' : '', w.kcal ? Math.round(w.kcal) + ' kcal' : '', w.rpe ? 'RPE ' + w.rpe : '', st.vol ? fmtKg(st.vol) + ' lifted' : ''].filter(Boolean);
-  const hists = {};
-  const parts = (w.parts || []).map(p => `<div class="part"><div class="part-h"><b>${esc(p.label || 'Part')}</b>${p.title ? `<span dir="auto">${esc(p.title)}</span>` : ''}</div>${(p.moves || []).map(m => {
+  const hists = {}, live = actions && date >= shift(ymd(), -1); // today, yesterday and planned days get kg/reps boxes
+  const setRows = (pi, mi, m) => {
+    const ss = m.sets || [], at = `data-date="${date}" data-wid="${esc(w.id)}" data-p="${pi}" data-m="${mi}"`;
+    if (ss.length && ss.every(x => x.sec != null && x.reps == null)) return '';
+    return `<div class="lset"><span></span><span class="h">kg${m.each ? ' each' : ''}</span><span class="h">Reps</span>${ss.map((x, si) => `<span class="n">${si + 1}</span><input class="lkg" type="number" inputmode="decimal" step="any" min="0" ${at} data-s="${si}" value="${x.kg ?? ''}" placeholder="–" aria-label="${esc(m.name)} set ${si + 1} kg"><input class="lrep" type="number" inputmode="numeric" min="0" ${at} data-s="${si}" value="${x.reps ?? ''}" placeholder="–" aria-label="${esc(m.name)} set ${si + 1} reps">`).join('')}<span></span><button class="add" data-act="liveAddSet" ${at}>+ Set</button></div>`;
+  };
+  const parts = (w.parts || []).map((p, pi) => `<div class="part"><div class="part-h"><b>${esc(p.label || 'Part')}</b>${p.title ? `<span dir="auto">${esc(p.title)}</span>` : ''}</div>${(p.moves || []).map((m, mi) => {
     const key = moveKey(m.name), hist = hists[key] || (hists[key] = moveHistory(key)), i = hist.findIndex(h => h.m === m), v = moveVerdict(hist, i);
-    return `<button class="mv" data-act="move" data-key="${esc(key)}"><span class="t"><span class="n" dir="auto">${esc(m.name)}${v && v.pr ? ' <span class="pill xs prb">PR</span>' : ''}</span><span class="s" dir="auto">${esc([fmtSets(m), m.note].filter(Boolean).join(' · '))}</span></span>${v ? `<span class="cmp ${v.cls}">${esc(v.text)}</span>` : ''}</button>`;
+    return `<button class="mv" data-act="move" data-key="${esc(key)}"><span class="t"><span class="n" dir="auto">${esc(m.name)}${v && v.pr ? ' <span class="pill xs prb">PR</span>' : ''}</span><span class="s" dir="auto">${esc([fmtSets(m), m.note].filter(Boolean).join(' · '))}</span></span>${v ? `<span class="cmp ${v.cls}">${esc(v.text)}</span>` : ''}</button>${live ? setRows(pi, mi, m) : ''}`;
   }).join('')}</div>`).join('');
   return `<div class="sess" style="--pc:${PLACES[placeOf(w)].color}">
     <div class="sess-h"><div class="sess-d"><b>${fmtDate(date, { weekday: 'long' })}</b><span>${fmtDate(date, { day: 'numeric', month: 'long' })}</span></div>${placePill(w)}</div>
@@ -1130,6 +1141,19 @@ function sessionCard(date, w, actions = true) {
     ${actions ? `<div class="sess-a"><button class="link" data-act="editWorkout" data-date="${date}" data-id="${esc(w.id)}">Edit</button><button class="link" data-act="delWorkout" data-date="${date}" data-id="${esc(w.id)}" style="color:var(--danger)">Delete</button></div>` : ''}
   </div>`;
 }
+// edit one movement's sets straight from the session card
+function liveSet(ds, fn) {
+  editDay(ds.date, d => {
+    const w = d.workouts.find(x => x.id === ds.wid), m = w && w.parts && w.parts[+ds.p] && w.parts[+ds.p].moves[+ds.m];
+    if (!m) return; m.sets = m.sets || []; fn(m.sets); w.updatedAt = new Date().toISOString(); d.train = true;
+  });
+}
+document.addEventListener('change', e => {
+  const t = e.target; if (!t.matches || !t.matches('.lset input')) return;
+  const n = num(t.value), k = t.classList.contains('lkg') ? 'kg' : 'reps';
+  liveSet(t.dataset, ss => { const x = ss[+t.dataset.s]; if (x) x[k] = n == null || n < 0 ? null : k === 'reps' ? Math.round(n) : n; });
+  toast('Saved');
+});
 function workoutHTML(w, actions) { return sessionCard(S.date, w, actions); }
 function weekCard(date) {
   const ws = weekStart(date), dates = Array.from({ length: 7 }, (_, i) => shift(ws, i));
@@ -1692,6 +1716,7 @@ document.addEventListener('click', e => {
   if (a === 'workout') return sheetWorkout();
   if (a === 'logWatch') { const x = ((H(S.date) || {}).exercise || []).find(z => z.start === b.dataset.start); if (x) sheetWorkout({ kind: /strength|weight/i.test(x.type) ? 'Gym' : 'Class', name: niceType(x.type), time: new Date(x.start).toTimeString().slice(0, 5), minutes: Math.round(x.minutes || 0) || null, kcal: x.kcal ? Math.round(x.kcal) : null, watch: x.start }); return; }
   if (a === 'delWorkout') { if (!b.dataset.arm) { b.dataset.arm = 1; b.textContent = 'Tap again to delete'; return; } return editDay(b.dataset.date || S.date, x => { x.workouts = x.workouts.filter(w => w.id !== b.dataset.id); }); }
+  if (a === 'liveAddSet') { liveSet(b.dataset, ss => { const l = ss[ss.length - 1]; ss.push(l ? Object.assign({}, l) : { reps: null, kg: null }); }); render(); return; }
   if (a === 'editWorkout') { const dt = b.dataset.date || S.date, w = day(dt).workouts.find(x => x.id === b.dataset.id); if (w) sheetWorkout(w, dt); return; }
   if (a === 'move') return sheetMove(b.dataset.key);
   if (a === 'plan') return sheetPlan();
