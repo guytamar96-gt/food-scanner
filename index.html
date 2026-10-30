@@ -226,12 +226,24 @@ h2 span.over { color: var(--warn); }
 .mv .t { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 1px; }
 .mv .n { font-weight: 600; overflow-wrap: anywhere; }
 .mv .s { font-size: 13px; color: var(--muted); font-variant-numeric: tabular-nums; overflow-wrap: anywhere; }
-.lset { display: grid; grid-template-columns: 34px 1fr 1fr; gap: 6px 8px; align-items: center; padding: 2px 0 12px; border-bottom: 1px solid var(--hair); }
+.lset { display: grid; grid-template-columns: 30px 1fr 1fr 62px; gap: 6px 8px; align-items: center; padding: 2px 0 12px; border-bottom: 1px solid var(--hair); }
 .lset .h { font-size: 11px; font-weight: 600; letter-spacing: .06em; text-transform: uppercase; color: var(--muted); }
 .lset .n { font-family: var(--display); font-weight: 700; color: var(--muted); text-align: center; font-variant-numeric: tabular-nums; }
 .lset input { height: 44px; padding: 0 12px; text-align: center; font-family: var(--display); font-size: 17px; font-weight: 700; background: var(--panel2); }
 .lset input:focus { border-color: var(--pc, var(--accent)); }
-.lset .add { grid-column: 2 / -1; height: 38px; border-radius: 12px; border: 1px dashed var(--line); background: none; color: var(--muted); font-weight: 600; font-size: 13px; }
+.lset .rt { height: 44px; border-radius: 12px; border: 0; background: none; color: var(--muted); font-size: 13px; font-weight: 700; font-variant-numeric: tabular-nums; display: flex; align-items: center; justify-content: center; gap: 4px; padding: 0; }
+.lset .rt svg { width: 15px; height: 15px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; }
+.lset .rt.on { background: var(--pc, var(--accent)); color: var(--bg); }
+.restbar { position: fixed; left: 50%; transform: translateX(-50%); bottom: calc(84px + env(safe-area-inset-bottom)); z-index: 25; width: min(560px, calc(100% - 32px)); border: 0; border-radius: 18px; background: var(--panel2); color: var(--text); display: flex; align-items: center; gap: 14px; padding: 12px 18px; box-shadow: 0 8px 30px rgba(0,0,0,.5); text-align: left; }
+.restbar b { font-family: var(--display); font-size: 30px; font-variant-numeric: tabular-nums; letter-spacing: -0.02em; }
+.restbar span { flex: 1; min-width: 0; font-size: 13px; color: var(--muted); }
+.restbar i { position: absolute; left: 0; bottom: 0; height: 4px; border-radius: 0 0 0 18px; background: var(--accent); }
+.restbar.go { background: var(--accent); color: var(--accent-ink); animation: restgo .5s ease-in-out 4 alternate; }
+.restbar.go span { color: var(--accent-ink); }
+body:has(#restbar) .toast { bottom: calc(176px + env(safe-area-inset-bottom)); }
+@keyframes restgo { to { transform: translateX(-50%) scale(1.04); } }
+@media (prefers-reduced-motion: reduce) { .restbar.go { animation: none; } }
+.lset .add { grid-column: 2 / 4; height: 38px; border-radius: 12px; border: 1px dashed var(--line); background: none; color: var(--muted); font-weight: 600; font-size: 13px; }
 .cmp { flex: none; font-size: 12px; font-weight: 700; padding: 4px 9px; border-radius: 99px; background: var(--panel2); color: var(--muted); white-space: nowrap; font-variant-numeric: tabular-nums; }
 .cmp.up { color: var(--accent); background: rgba(200, 241, 53, .12); }
 .cmp.down { color: var(--warn); background: rgba(245, 184, 61, .1); }
@@ -1124,7 +1136,7 @@ function sessionCard(date, w, actions = true) {
   const setRows = (pi, mi, m) => {
     const ss = m.sets || [], at = `data-date="${date}" data-wid="${esc(w.id)}" data-p="${pi}" data-m="${mi}"`;
     if (ss.length && ss.every(x => x.sec != null && x.reps == null)) return '';
-    return `<div class="lset"><span></span><span class="h">kg${m.each ? ' each' : ''}</span><span class="h">Reps</span>${ss.map((x, si) => `<span class="n">${si + 1}</span><input class="lkg" type="number" inputmode="decimal" step="any" min="0" ${at} data-s="${si}" value="${x.kg ?? ''}" placeholder="–" aria-label="${esc(m.name)} set ${si + 1} kg"><input class="lrep" type="number" inputmode="numeric" min="0" ${at} data-s="${si}" value="${x.reps ?? ''}" placeholder="–" aria-label="${esc(m.name)} set ${si + 1} reps">`).join('')}<span></span><button class="add" data-act="liveAddSet" ${at}>+ Set</button></div>`;
+    return `<div class="lset"><span></span><span class="h">kg${m.each ? ' each' : ''}</span><span class="h">Reps</span><span class="h" style="text-align:center">Rest</span>${ss.map((x, si) => `<span class="n">${si + 1}</span><input class="lkg" type="number" inputmode="decimal" step="any" min="0" ${at} data-s="${si}" value="${x.kg ?? ''}" placeholder="–" aria-label="${esc(m.name)} set ${si + 1} kg"><input class="lrep" type="number" inputmode="numeric" min="0" ${at} data-s="${si}" value="${x.reps ?? ''}" placeholder="–" aria-label="${esc(m.name)} set ${si + 1} reps">${restBtn(date, w, pi, mi, si)}`).join('')}<span></span><button class="add" data-act="liveAddSet" ${at}>+ Set</button></div>`;
   };
   const parts = (w.parts || []).map((p, pi) => `<div class="part"><div class="part-h"><b>${esc(p.label || 'Part')}</b>${p.title ? `<span dir="auto">${esc(p.title)}</span>` : ''}</div>${(p.moves || []).map((m, mi) => {
     const key = moveKey(m.name), hist = hists[key] || (hists[key] = moveHistory(key)), i = hist.findIndex(h => h.m === m), v = moveVerdict(hist, i);
@@ -1141,6 +1153,61 @@ function sessionCard(date, w, actions = true) {
     ${actions ? `<div class="sess-a"><button class="link" data-act="editWorkout" data-date="${date}" data-id="${esc(w.id)}">Edit</button><button class="link" data-act="delWorkout" data-date="${date}" data-id="${esc(w.id)}" style="color:var(--danger)">Delete</button></div>` : ''}
   </div>`;
 }
+// ---------- rest timer ----------
+// rest per set: a planned "rest" (seconds) on the movement wins; otherwise by kind of exercise and reps
+const ISO = /lateral|curl|pushdown|push-down|extension|fly|flye|raise|kickback|face pull|pull-apart|shrug|calf|crunch|bridge/i;
+function restFor(p, m, mi) {
+  if (m.rest != null) return m.rest;
+  if (/superset|circuit|giant set/i.test((p.label || '') + ' ' + (p.title || '')) && mi < (p.moves || []).length - 1) return 0; // go straight to the next move
+  if (/warm/i.test(p.label || '')) return 45;
+  const reps = (m.sets || []).map(x => x.reps).filter(x => x != null), avg = reps.length ? reps.reduce((a, b) => a + b, 0) / reps.length : 8;
+  if (avg <= 6) return 150;
+  if (ISO.test(m.name || '') || avg > 10) return 75;
+  return 120;
+}
+const fmtRest = s => Math.floor(s / 60) + ':' + String(s % 60).padStart(2, '0');
+const TIMER_ICON = '<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="13" r="8"/><path d="M12 9v4l2.5 2M10 2h4"/></svg>';
+function restBtn(date, w, pi, mi, si) {
+  const p = w.parts[pi], m = p.moves[mi], sec = restFor(p, m, mi), key = [date, w.id, pi, mi, si].join('|');
+  if (!sec) return '<span class="rt" title="Superset: go to the next exercise">→</span>';
+  const on = REST.key === key;
+  return `<button class="rt${on ? ' on' : ''}" data-act="rest" data-key="${esc(key)}" data-sec="${sec}" data-name="${esc(m.name)}" data-set="${si + 1}" aria-label="Start ${fmtRest(sec)} rest after set ${si + 1}">${on ? '' : TIMER_ICON}${fmtRest(on ? Math.max(0, Math.ceil((REST.end - Date.now()) / 1000)) : sec)}</button>`;
+}
+const REST = { key: null, end: 0, total: 0, iv: 0, lock: null, label: '' };
+function restBar() { let el = $('restbar'); if (!el) { el = document.createElement('button'); el.id = 'restbar'; el.className = 'restbar'; el.dataset.act = 'restStop'; document.body.appendChild(el); } return el; }
+function startRest(key, sec, label) {
+  stopRest(); REST.key = key; REST.total = sec; REST.end = Date.now() + sec * 1000; REST.label = label;
+  try { if (navigator.wakeLock) navigator.wakeLock.request('screen').then(l => { REST.lock = l; }).catch(() => {}); } catch (e) {}
+  restTick(); REST.iv = setInterval(restTick, 250);
+}
+function restTick() {
+  const left = Math.max(0, Math.ceil((REST.end - Date.now()) / 1000)), el = restBar();
+  el.classList.remove('go');
+  el.innerHTML = `<b>${fmtRest(left)}</b><span>Rest · ${esc(REST.label)}<br>Tap to stop</span><i style="width:${100 - (REST.end - Date.now()) / (REST.total * 10)}%"></i>`;
+  const btn = document.querySelector(`.rt[data-key="${CSS.escape(REST.key)}"]`); if (btn) btn.textContent = fmtRest(left);
+  if (left <= 0) restDone();
+}
+function restDone() {
+  clearInterval(REST.iv); REST.iv = 0;
+  const el = restBar(); el.classList.add('go'); el.innerHTML = '<b>Go</b><span>Next set. Tap to close</span>';
+  if (navigator.vibrate) navigator.vibrate([300, 150, 300, 150, 300]);
+  try { const ac = new (window.AudioContext || window.webkitAudioContext)(); [0, 0.25, 0.5].forEach(t => { const o = ac.createOscillator(), g = ac.createGain(); o.frequency.value = 880; g.gain.setValueAtTime(0.25, ac.currentTime + t); g.gain.exponentialRampToValueAtTime(0.001, ac.currentTime + t + 0.2); o.connect(g); g.connect(ac.destination); o.start(ac.currentTime + t); o.stop(ac.currentTime + t + 0.2); }); setTimeout(() => ac.close(), 1200); } catch (e) {}
+  const k = REST.key; REST.key = null; refreshRestBtn(k);
+  setTimeout(() => { if (!REST.key && el.classList.contains('go')) stopRest(); }, 8000);
+}
+function stopRest() {
+  const k = REST.key; clearInterval(REST.iv); REST.iv = 0; REST.key = null;
+  if (REST.lock) { REST.lock.release().catch(() => {}); REST.lock = null; }
+  const el = $('restbar'); if (el) el.remove(); if (k) refreshRestBtn(k);
+}
+function refreshRestBtn(k) { const b = document.querySelector(`.rt[data-key="${CSS.escape(k)}"]`); if (b) { b.classList.remove('on'); b.innerHTML = TIMER_ICON + fmtRest(Number(b.dataset.sec)); } }
+
+// pointerdown runs before the kg/reps box loses focus and the card redraws, so the tap isn't lost
+document.addEventListener('pointerdown', e => {
+  const b = e.target.closest && e.target.closest('button.rt[data-act=rest]'); if (!b) return;
+  if (REST.key === b.dataset.key) return stopRest();
+  startRest(b.dataset.key, Number(b.dataset.sec), `${b.dataset.name}, set ${b.dataset.set}`); b.classList.add('on');
+});
 // edit one movement's sets straight from the session card
 function liveSet(ds, fn) {
   editDay(ds.date, d => {
@@ -1716,6 +1783,8 @@ document.addEventListener('click', e => {
   if (a === 'workout') return sheetWorkout();
   if (a === 'logWatch') { const x = ((H(S.date) || {}).exercise || []).find(z => z.start === b.dataset.start); if (x) sheetWorkout({ kind: /strength|weight/i.test(x.type) ? 'Gym' : 'Class', name: niceType(x.type), time: new Date(x.start).toTimeString().slice(0, 5), minutes: Math.round(x.minutes || 0) || null, kcal: x.kcal ? Math.round(x.kcal) : null, watch: x.start }); return; }
   if (a === 'delWorkout') { if (!b.dataset.arm) { b.dataset.arm = 1; b.textContent = 'Tap again to delete'; return; } return editDay(b.dataset.date || S.date, x => { x.workouts = x.workouts.filter(w => w.id !== b.dataset.id); }); }
+  if (a === 'rest') return; // handled on pointerdown
+  if (a === 'restStop') return stopRest();
   if (a === 'liveAddSet') { liveSet(b.dataset, ss => { const l = ss[ss.length - 1]; ss.push(l ? Object.assign({}, l) : { reps: null, kg: null }); }); render(); return; }
   if (a === 'editWorkout') { const dt = b.dataset.date || S.date, w = day(dt).workouts.find(x => x.id === b.dataset.id); if (w) sheetWorkout(w, dt); return; }
   if (a === 'move') return sheetMove(b.dataset.key);
