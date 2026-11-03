@@ -325,6 +325,16 @@ ol.steps li { margin-bottom: 8px; }
 a { color: var(--accent); }
 code { background: var(--panel2); padding: 1px 6px; border-radius: 6px; font-size: 13px; overflow-wrap: anywhere; }
 [dir="auto"] { unicode-bidi: plaintext; text-align: left; }
+
+.tgt { margin: 2px 0 10px; padding: 10px 12px; border-radius: 14px; background: var(--panel2); display: grid; gap: 6px; }
+.tgt-r { display: flex; align-items: center; gap: 10px; }
+.tgt-l { font-size: 11px; font-weight: 600; letter-spacing: .06em; text-transform: uppercase; color: var(--muted); width: 74px; flex: none; }
+.tgt-v { font-variant-numeric: tabular-nums; color: var(--muted); font-size: 13px; flex: 1; }
+.tgt-v.b { color: var(--text, #fff); font-family: var(--display); font-weight: 700; font-size: 16px; }
+.tgt.up .tgt-v.b { color: var(--pc, var(--accent)); }
+.tgt-fill { flex: none; height: 32px; padding: 0 12px; border-radius: 10px; border: 1px solid var(--pc, var(--accent)); background: none; color: var(--pc, var(--accent)); font-weight: 700; font-size: 13px; }
+.tgt-w { font-size: 12.5px; line-height: 1.4; color: var(--muted); }
+.lset input::placeholder { color: var(--muted); opacity: .55; }
 </style>
 </head>
 <body>
@@ -1104,7 +1114,7 @@ function cmpMove(a, b) {
   return { dir: 0, text: 'same' };
 }
 function moveVerdict(hist, i) { // compare entry i with the one before it
-  const cur = hist[i]; if (!cur || !cur.st.n) return null;
+  const cur = hist[i]; if (!cur || !cur.st.n || !cur.st.reps) return null; // not done yet
   const before = hist.slice(0, i).filter(h => h.w !== cur.w && h.st.n); // a warm-up set in the same session doesn't count
   if (!before.length) return { cls: 'new', text: 'first time' };
   // compare with the last session that had it: the same part if it had one (warm-up vs warm-up), else its heaviest
@@ -1116,7 +1126,7 @@ function moveVerdict(hist, i) { // compare entry i with the one before it
   return { cls: c.dir > 0 ? 'up' : c.dir < 0 ? 'down' : 'same', text: (c.dir > 0 ? '▲ ' : c.dir < 0 ? '▼ ' : '= ') + c.text, pr };
 }
 function fmtSets(m) {
-  const s = m.sets || []; if (!s.length) return '';
+  const s = m.sets || []; if (!s.length || !s.some(x => x.reps || x.kg || x.sec)) return '';
   const g = []; for (const x of s) { const l = g[g.length - 1]; if (l && l.x.reps === x.reps && l.x.kg === x.kg && l.x.sec === x.sec) l.n++; else g.push({ x, n: 1 }); }
   const unit = s.some(x => x.kg) ? (m.each ? ' kg each' : ' kg') : '';
   if (g.length > 2 && g.every(y => y.n === 1 && y.x.reps === s[0].reps && !y.x.sec && y.x.kg)) return s[0].reps + ' reps · ' + s.map(x => x.kg).join(' → ') + unit;
@@ -1130,17 +1140,31 @@ function sessionStats(w) {
   return { vol: Math.round(vol), groups: [...groups] };
 }
 function fmtKg(v) { return v >= 10000 ? r1(v / 1000) + ' t' : Math.round(v).toLocaleString() + ' kg'; }
+
+// ---------- last time + next target (double progression: reps 8-12, then add weight) ----------
+function nextTarget(hist, w, m) {
+  const before = hist.filter(h => h.w !== w && h.st.n); if (!before.length) return null;
+  const lastW = before[before.length - 1].w, last = before.filter(h => h.w === lastW);
+  const ref = last.reduce((a, h) => (h.st.top || 0) > (a.st.top || 0) ? h : a), sets = (ref.m.sets || []).filter(x => x.kg);
+  if (!sets.length) return null;
+  const lo = m.lo || 8, hi = m.hi || 12, kg = Math.max(...sets.map(x => x.kg)), work = sets.filter(x => x.kg === kg);
+  const step = kg < 10 ? 1 : 2.5;
+  const allTop = work.every(x => (x.reps || 0) >= hi);
+  const minR = Math.min(...work.map(x => x.reps || 0));
+  if (allTop) return { kg: r1(kg + step), reps: lo, up: true, why: `You hit ${hi} reps on every set last time, so the weight goes up ${step} kg and reps start again at ${lo}.`, last: ref.m.sets };
+  return { kg, reps: Math.min(hi, minR + 1), up: false, why: `Same weight. Aim for ${Math.min(hi, minR + 1)}+ reps a set, and when every set reaches ${hi} the weight goes up.`, last: ref.m.sets };
+}
 function sessionCard(date, w, actions = true) {
   const st = sessionStats(w), meta = [wTime(w), w.minutes ? w.minutes + ' min' : '', w.kcal ? Math.round(w.kcal) + ' kcal' : '', w.rpe ? 'RPE ' + w.rpe : '', st.vol ? fmtKg(st.vol) + ' lifted' : ''].filter(Boolean);
   const hists = {}, live = actions && date >= shift(ymd(), -1); // today, yesterday and planned days get kg/reps boxes
-  const setRows = (pi, mi, m) => {
+  const setRows = (pi, mi, m, tg) => {
     const ss = m.sets || [], at = `data-date="${date}" data-wid="${esc(w.id)}" data-p="${pi}" data-m="${mi}"`;
     if (ss.length && ss.every(x => x.sec != null && x.reps == null)) return '';
-    return `<div class="lset"><span></span><span class="h">kg${m.each ? ' each' : ''}</span><span class="h">Reps</span><span class="h" style="text-align:center">Rest</span>${ss.map((x, si) => `<span class="n">${si + 1}</span><input class="lkg" type="number" inputmode="decimal" step="any" min="0" ${at} data-s="${si}" value="${x.kg ?? ''}" placeholder="–" aria-label="${esc(m.name)} set ${si + 1} kg"><input class="lrep" type="number" inputmode="numeric" min="0" ${at} data-s="${si}" value="${x.reps ?? ''}" placeholder="–" aria-label="${esc(m.name)} set ${si + 1} reps">${restBtn(date, w, pi, mi, si)}`).join('')}<span></span><button class="add" data-act="liveAddSet" ${at}>+ Set</button></div>`;
+    return `<div class="lset"><span></span><span class="h">kg${m.each ? ' each' : ''}</span><span class="h">Reps</span><span class="h" style="text-align:center">Rest</span>${ss.map((x, si) => `<span class="n">${si + 1}</span><input class="lkg" type="number" inputmode="decimal" step="any" min="0" ${at} data-s="${si}" value="${x.kg ?? ''}" placeholder="${tg ? tg.kg : '–'}" aria-label="${esc(m.name)} set ${si + 1} kg"><input class="lrep" type="number" inputmode="numeric" min="0" ${at} data-s="${si}" value="${x.reps ?? ''}" placeholder="${tg ? tg.reps : '–'}" aria-label="${esc(m.name)} set ${si + 1} reps">${restBtn(date, w, pi, mi, si)}`).join('')}<span></span><button class="add" data-act="liveAddSet" ${at}>+ Set</button></div>`;
   };
   const parts = (w.parts || []).map((p, pi) => `<div class="part"><div class="part-h"><b>${esc(p.label || 'Part')}</b>${p.title ? `<span dir="auto">${esc(p.title)}</span>` : ''}</div>${(p.moves || []).map((m, mi) => {
-    const key = moveKey(m.name), hist = hists[key] || (hists[key] = moveHistory(key)), i = hist.findIndex(h => h.m === m), v = moveVerdict(hist, i);
-    return `<button class="mv" data-act="move" data-key="${esc(key)}"><span class="t"><span class="n" dir="auto">${esc(m.name)}${v && v.pr ? ' <span class="pill xs prb">PR</span>' : ''}</span><span class="s" dir="auto">${esc([fmtSets(m), m.note].filter(Boolean).join(' · '))}</span></span>${v ? `<span class="cmp ${v.cls}">${esc(v.text)}</span>` : ''}</button>${live ? setRows(pi, mi, m) : ''}`;
+    let tg; const key = moveKey(m.name), hist = hists[key] || (hists[key] = moveHistory(key)), i = hist.findIndex(h => h.m === m), v = moveVerdict(hist, i);
+    return `<button class="mv" data-act="move" data-key="${esc(key)}"><span class="t"><span class="n" dir="auto">${esc(m.name)}${v && v.pr ? ' <span class="pill xs prb">PR</span>' : ''}</span><span class="s" dir="auto">${esc([fmtSets(m), m.note].filter(Boolean).join(' · '))}</span></span>${v ? `<span class="cmp ${v.cls}">${esc(v.text)}</span>` : ''}</button>${live && (tg = nextTarget(hist, w, m)) ? `<div class="tgt${tg.up ? ' up' : ''}"><div class="tgt-r"><span class="tgt-l">Last time</span><span class="tgt-v">${esc(fmtSets({ sets: tg.last, each: m.each }))}</span></div><div class="tgt-r"><span class="tgt-l">Today</span><span class="tgt-v b">${tg.up ? '▲ ' : ''}${tg.kg} kg × ${tg.reps}</span><button class="tgt-fill" data-act="liveFill" data-date="${date}" data-wid="${esc(w.id)}" data-p="${pi}" data-m="${mi}" data-kg="${tg.kg}" data-reps="${tg.reps}">Fill sets</button></div><div class="tgt-w">${esc(tg.why)}</div></div>` : ''}${live ? setRows(pi, mi, m, tg) : ''}`;
   }).join('')}</div>`).join('');
   return `<div class="sess" style="--pc:${PLACES[placeOf(w)].color}">
     <div class="sess-h"><div class="sess-d"><b>${fmtDate(date, { weekday: 'long' })}</b><span>${fmtDate(date, { day: 'numeric', month: 'long' })}</span></div>${placePill(w)}</div>
@@ -1218,7 +1242,8 @@ function liveSet(ds, fn) {
 document.addEventListener('change', e => {
   const t = e.target; if (!t.matches || !t.matches('.lset input')) return;
   const n = num(t.value), k = t.classList.contains('lkg') ? 'kg' : 'reps';
-  liveSet(t.dataset, ss => { const x = ss[+t.dataset.s]; if (x) x[k] = n == null || n < 0 ? null : k === 'reps' ? Math.round(n) : n; });
+  const other = t.parentNode.querySelector(`.${k === 'kg' ? 'lrep' : 'lkg'}[data-s="${t.dataset.s}"]`), ok = k === 'kg' ? 'reps' : 'kg', ov = other && !other.value ? num(other.placeholder) : null;
+  liveSet(t.dataset, ss => { const x = ss[+t.dataset.s]; if (!x) return; x[k] = n == null || n < 0 ? null : k === 'reps' ? Math.round(n) : n; if (x[k] != null && x[ok] == null && ov != null) { x[ok] = ov; other.value = ov; } }); // typing one box takes the target for the other
   toast('Saved');
 });
 function workoutHTML(w, actions) { return sessionCard(S.date, w, actions); }
@@ -1785,6 +1810,7 @@ document.addEventListener('click', e => {
   if (a === 'delWorkout') { if (!b.dataset.arm) { b.dataset.arm = 1; b.textContent = 'Tap again to delete'; return; } return editDay(b.dataset.date || S.date, x => { x.workouts = x.workouts.filter(w => w.id !== b.dataset.id); }); }
   if (a === 'rest') return; // handled on pointerdown
   if (a === 'restStop') return stopRest();
+  if (a === 'liveFill') { const kg = num(b.dataset.kg), reps = num(b.dataset.reps); liveSet(b.dataset, ss => { if (!ss.length) ss.push({ reps: null, kg: null }); for (const x of ss) { if (x.kg == null) x.kg = kg; if (x.reps == null) x.reps = reps; } }); render(); toast('Saved'); return; }
   if (a === 'liveAddSet') { liveSet(b.dataset, ss => { const l = ss[ss.length - 1]; ss.push(l ? Object.assign({}, l) : { reps: null, kg: null }); }); render(); return; }
   if (a === 'editWorkout') { const dt = b.dataset.date || S.date, w = day(dt).workouts.find(x => x.id === b.dataset.id); if (w) sheetWorkout(w, dt); return; }
   if (a === 'move') return sheetMove(b.dataset.key);
