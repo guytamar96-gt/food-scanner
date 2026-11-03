@@ -358,6 +358,21 @@ code { background: var(--panel2); padding: 1px 6px; border-radius: 6px; font-siz
 .mkey i.m2 { background: color-mix(in srgb, var(--accent) 68%, var(--panel2)); }
 .mkey i.m3 { background: var(--accent); }
 .mkey i.focus { background: color-mix(in srgb, #F59E0B 30%, #50545b); border: 1.5px solid #F59E0B; }
+
+.cmpbox { position: relative; aspect-ratio: 3 / 4; border-radius: 16px; overflow: hidden; background: #16181c; }
+.cmpbox img, .cmp-after img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+.cmp-after { position: absolute; inset: 0; clip-path: inset(0 0 0 var(--x)); }
+.cmp-line { position: absolute; top: 0; bottom: 0; left: var(--x); width: 2px; margin-left: -1px; background: var(--accent); pointer-events: none; }
+.cmp-line span { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 38px; height: 38px; border-radius: 50%; background: var(--accent); color: var(--bg); display: grid; place-items: center; font-weight: 800; font-size: 17px; }
+.cmp-tag { position: absolute; top: 10px; padding: 6px 10px; border-radius: 10px; background: rgba(0,0,0,.55); font-size: 12px; color: #ddd; display: grid; line-height: 1.25; pointer-events: none; }
+.cmp-tag b { font-family: var(--display); font-size: 15px; color: #fff; }
+.cmp-tag.l { left: 10px; } .cmp-tag.r { right: 10px; text-align: right; }
+.cmp-range { position: absolute; inset: 0; width: 100%; height: 100%; opacity: 0; margin: 0; cursor: ew-resize; }
+.pthumbs { display: flex; gap: 8px; margin-top: 12px; overflow-x: auto; }
+.pthumbs button { flex: none; width: 62px; padding: 0; border: 0; background: none; color: var(--muted); font-size: 11.5px; display: grid; gap: 4px; }
+.pthumbs img { width: 62px; height: 82px; object-fit: cover; border-radius: 10px; border: 2px solid transparent; background: #16181c; }
+.pthumbs .sel img { border-color: var(--text, #fff); } .pthumbs .now img { border-color: var(--accent); }
+.pthumbs .sel span, .pthumbs .now span { color: var(--text, #fff); font-weight: 600; }
 </style>
 </head>
 <body>
@@ -395,7 +410,7 @@ const NUMS = ['kcal', 'protein', 'carbs', 'fat', 'sugar', 'sat_fat', 'fibre', 's
 const DEFAULT_MEALS = { rest: { Breakfast: 500, Lunch: 650, Dinner: 550, Snacks: 50 }, train: { Breakfast: 500, Lunch: 650, Dinner: 550, Snacks: 300 } };
 const DEFAULT_TARGETS = { rest: { kcal: 1750, p: 150, c: 165, f: 55, water: 2800 }, train: { kcal: 2000, p: 170, c: 205, f: 55, water: 3500 }, steps: 9000, sleep: 7.5 };
 const LS = { cat: 'fs-catalogue', pending: 'fs-pending', days: 'fs-days', token: 'fs-token', targets: 'fs-targets', train: 'fs-train', sha: 'fs-sha',
-  log: 'fs-log', lsha: 'fs-log-sha', ldirty: 'fs-log-dirty', health: 'fs-health', migrated: 'fs-migrated-v1' };
+  log: 'fs-log', lsha: 'fs-log-sha', ldirty: 'fs-log-dirty', health: 'fs-health', migrated: 'fs-migrated-v1', photoPending: 'fs-photo-pending' };
 const LIFTS = ['Back squat', 'Front squat', 'Deadlift', 'Bench press', 'Strict press', 'Push press', 'Clean', 'Clean & jerk', 'Snatch', 'Thruster'];
 const BENCH = [
   ['Fran', 'time', '21-15-9 thrusters 43 kg, pull-ups'], ['Grace', 'time', '30 clean & jerks 61 kg'], ['Isabel', 'time', '30 snatches 61 kg'],
@@ -487,7 +502,8 @@ const S = {
   targets: Object.assign(clone(DEFAULT_TARGETS), load(LS.targets, {})),
   sha: load(LS.sha, null),
   syncing: false, syncErr: null,
-  log: Object.assign({ days: {}, prs: {}, meas: {}, profile: {}, templates: {}, coach: null }, load(LS.log, {})),
+  log: Object.assign({ days: {}, prs: {}, meas: {}, profile: {}, templates: {}, coach: null, photos: {} }, load(LS.log, {})),
+  photoPose: 'front', photoBefore: null,
   lsha: load(LS.lsha, {}),            // GitHub sha of each log file as last seen
   ldirty: load(LS.ldirty, []),        // log files changed on this phone and not yet saved
   lgen: {}, lsyncing: false, lerr: null, lastPull: 0,
@@ -567,7 +583,7 @@ function latestWeight() { const ds = new Set([...Object.keys(S.log.days), ...Obj
 // ---------- GitHub: catalogue (public repo) ----------
 function setSync() {
   const el = $('sync'); if (!el) return;
-  const n = S.pending.length + S.ldirty.length, busy = S.syncing || S.lsyncing, err = S.syncErr || S.lerr;
+  const n = S.pending.length + S.ldirty.length + load(LS.photoPending, []).length, busy = S.syncing || S.lsyncing, err = S.syncErr || S.lerr;
   el.className = 'sync' + (err ? ' err' : busy || n ? ' busy' : '');
   el.innerHTML = '<i></i>' + esc(!S.token ? 'On this phone only' : busy ? 'Saving…' : err ? err : n ? `${n} not saved yet` : 'Saved');
 }
@@ -625,7 +641,7 @@ async function push(retry = true) {
 // ---------- GitHub: daily log (private repo) ----------
 // Files: days/YYYY-MM-DD.json, prs.json, measurements.json, profile.json, templates.json (written here);
 // targets.json (written by the coach) and health/YYYY-MM-DD.json (written by the Samsung relay) are read only.
-const ROOT_FILES = { 'prs.json': 'prs', 'measurements.json': 'meas', 'profile.json': 'profile', 'templates.json': 'templates', 'targets.json': 'coach' };
+const ROOT_FILES = { 'prs.json': 'prs', 'measurements.json': 'meas', 'profile.json': 'profile', 'templates.json': 'templates', 'targets.json': 'coach', 'photos.json': 'photos' };
 function dataFor(path) { if (path.startsWith('days/')) return S.log.days[path.slice(5, 15)]; return S.log[ROOT_FILES[path]]; }
 function applyRemote(path, obj) {
   if (path.startsWith('days/')) S.log.days[path.slice(5, 15)] = normDay(obj);
@@ -698,8 +714,8 @@ async function logPull() {
   } catch (e) { S.lerr = logErr(e); }
   setSync();
 }
-async function syncAll() { await logPull(); render(); logPush(); }
-window.addEventListener('online', () => { sync(); logPush(); });
+async function syncAll() { await logPull(); render(); logPush(); photoPush(); }
+window.addEventListener('online', () => { sync(); logPush(); photoPush(); });
 document.addEventListener('visibilitychange', () => { if (!document.hidden && Date.now() - S.lastPull > 60000) syncAll(); });
 
 // ---------- Open Food Facts ----------
@@ -1488,6 +1504,108 @@ function sheetMeasure() {
   });
 }
 
+// ---------- progress photos: shrunk on the phone, kept in the private repo (photos/), list in photos.json ----------
+const PHOTO_CACHE = 'guy-photos-v1', POSES = [['front', 'Front'], ['side', 'Side'], ['back', 'Back']];
+const BLANK = 'data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==';
+const photoURLs = {};
+async function photoCache() { try { return await caches.open(PHOTO_CACHE); } catch (e) { return null; } }
+const photoKey = path => 'https://photos.local/' + path;
+async function photoBlob(path) {
+  const c = await photoCache();
+  if (c) { const hit = await c.match(photoKey(path)); if (hit) return hit.blob(); }
+  if (!S.token) return null;
+  const r = await fetch('https://api.github.com/repos/' + DATA_REPO + '/contents/' + path, { headers: { Accept: 'application/vnd.github.raw', Authorization: 'Bearer ' + S.token, 'X-GitHub-Api-Version': '2022-11-28' }, cache: 'no-store' });
+  if (!r.ok) return null;
+  const b = await r.blob();
+  if (c) c.put(photoKey(path), new Response(b, { headers: { 'Content-Type': 'image/jpeg' } })).catch(() => {});
+  return b;
+}
+function photoImg(p, cls = '') {
+  if (photoURLs[p.path] == null) {
+    photoURLs[p.path] = '';
+    photoBlob(p.path).then(b => { if (!b) { delete photoURLs[p.path]; return; } photoURLs[p.path] = URL.createObjectURL(b); document.querySelectorAll('img[data-photo]').forEach(i => { if (i.dataset.photo === p.path) i.src = photoURLs[p.path]; }); }).catch(() => { delete photoURLs[p.path]; });
+  }
+  return `<img${cls ? ` class="${cls}"` : ''} data-photo="${esc(p.path)}" src="${photoURLs[p.path] || BLANK}" alt="">`;
+}
+async function shrinkPhoto(file) { // longest side 1280 px, JPEG; redrawing also drops the location data in the original
+  let img = null; try { img = await createImageBitmap(file, { imageOrientation: 'from-image' }); } catch (e) {}
+  if (!img) img = await new Promise((res, rej) => { const i = new Image(); i.onload = () => res(i); i.onerror = rej; i.src = URL.createObjectURL(file); });
+  const k = Math.min(1, 1280 / Math.max(img.width, img.height)), cv = document.createElement('canvas');
+  cv.width = Math.round(img.width * k); cv.height = Math.round(img.height * k);
+  cv.getContext('2d').drawImage(img, 0, 0, cv.width, cv.height);
+  return new Promise((res, rej) => cv.toBlob(b => b ? res(b) : rej(new Error('photo')), 'image/jpeg', 0.8));
+}
+function blobB64(b) { return new Promise((res, rej) => { const r = new FileReader(); r.onload = () => res(String(r.result).split(',')[1]); r.onerror = rej; r.readAsDataURL(b); }); }
+async function photoPush() {
+  if (!S.token || photoPush.busy || !load(LS.photoPending, []).length) return;
+  photoPush.busy = true; setSync();
+  try {
+    const c = await photoCache();
+    for (const path of load(LS.photoPending, [])) {
+      const hit = c && await c.match(photoKey(path));
+      if (hit) {
+        try { await ghr(DATA_REPO, '/contents/' + path, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ message: 'Add ' + path, content: await blobB64(await hit.blob()) }) }); }
+        catch (e) { if (e.status !== 422) throw e; } // 422: already uploaded
+      }
+      save(LS.photoPending, load(LS.photoPending, []).filter(p => p !== path));
+    }
+  } catch (e) { clearTimeout(photoPush.t); photoPush.t = setTimeout(photoPush, 30000); }
+  photoPush.busy = false; setSync();
+}
+function weightNear(date) { for (const n of [0, -1, 1, -2, 2, -3, 3]) { const w = weightOf(shift(date, n)); if (w != null) return w; } return null; }
+function photoCard() {
+  const pose = S.photoPose, list = Object.values(S.log.photos || {}).filter(p => p.pose === pose).sort((a, b) => a.date.localeCompare(b.date) || a.id.localeCompare(b.id));
+  const after = list[list.length - 1], before = list.length > 1 ? (list.find(p => p.id === S.photoBefore && p !== after) || list[0]) : null;
+  const tag = (p, side) => `<div class="cmp-tag ${side}">${fmtDate(p.date, { day: 'numeric', month: 'short' })}${(w => w != null ? `<b>${w} kg</b>` : '')(weightNear(p.date))}</div>`;
+  const view = !after ? `<div class="empty" style="padding:26px 6px;text-align:center">No ${pose} photo yet. Take one in the same spot and light every 2 weeks, with your measurements.</div>`
+    : !before ? `<div class="cmpbox">${photoImg(after)}${tag(after, 'r')}</div><p class="small muted" style="margin:10px 0 0">Add a second ${pose} photo later and you can slide between them.</p>`
+    : `<div class="cmpbox" style="--x:50%">${photoImg(before)}<div class="cmp-after">${photoImg(after)}</div><div class="cmp-line"><span>⇆</span></div>${tag(before, 'l')}${tag(after, 'r')}<input type="range" class="cmp-range" min="0" max="100" value="50" aria-label="Slide between before and after"></div>`;
+  return `<h2>Progress photos<button data-act="photoAdd">+ Photo</button></h2>
+    <div class="card pcard">
+      <div class="seg sm" role="group" aria-label="Pose" style="margin-bottom:12px">${POSES.map(([k, n]) => `<button data-act="photoPose" data-v="${k}" aria-pressed="${k === pose}">${n}</button>`).join('')}</div>
+      ${view}
+      ${list.length > 1 ? `<div class="pthumbs">${list.slice().reverse().map(p => `<button data-act="photoPick" data-id="${esc(p.id)}" class="${p === after ? 'now' : p === before ? 'sel' : ''}">${photoImg(p)}<span>${fmtDate(p.date, { day: 'numeric', month: 'short' })}</span></button>`).join('')}</div>
+      <p class="small muted" style="margin:10px 0 0">Tap a date to make it "before". Tap it again to view or delete it. The newest photo is "after".</p>` : ''}
+    </div>`;
+}
+document.addEventListener('input', e => { if (e.target.classList && e.target.classList.contains('cmp-range')) e.target.parentNode.style.setProperty('--x', e.target.value + '%'); });
+function sheetPhotoAdd() {
+  let pose = S.photoPose;
+  openSheet('Progress photo', `
+    <p class="small muted">Same spot, same light, relaxed, morning before food works best. The photo is shrunk and saved only in your private log.</p>
+    <div class="seg sm" role="group" aria-label="Pose" id="phP" style="margin:12px 0">${POSES.map(([k, n]) => `<button data-v="${k}" aria-pressed="${k === pose}">${n}</button>`).join('')}</div>
+    <label class="f">Date<input type="date" id="phD" value="${S.date > ymd() ? ymd() : S.date}" max="${ymd()}"></label>
+    <label class="btn primary block" style="margin-top:8px">Take or choose a photo<input type="file" accept="image/*" id="phF" hidden></label>`, el => {
+    el.querySelectorAll('#phP button').forEach(b => b.onclick = () => { pose = b.dataset.v; el.querySelectorAll('#phP button').forEach(x => x.setAttribute('aria-pressed', x === b)); });
+    el.querySelector('#phF').onchange = async ev => {
+      const f = ev.target.files && ev.target.files[0]; if (!f) return;
+      let blob; try { blob = await shrinkPhoto(f); } catch (e) { toast('Couldn’t read that photo'); return; }
+      const date = $('phD').value || ymd(), id = uid(), path = `photos/${date}-${pose}-${id}.jpg`, c = await photoCache();
+      if (c) await c.put(photoKey(path), new Response(blob, { headers: { 'Content-Type': 'image/jpeg' } }));
+      photoURLs[path] = URL.createObjectURL(blob);
+      save(LS.photoPending, load(LS.photoPending, []).concat(path));
+      S.log.photos = Object.assign({}, S.log.photos, { [id]: { id, date, pose, path } });
+      S.photoPose = pose; closeSheet(); markDirty('photos.json'); toast('Photo saved'); photoPush();
+    };
+  });
+}
+function sheetPhotoView(id) {
+  const p = (S.log.photos || {})[id]; if (!p) return;
+  openSheet(`${POSES.find(x => x[0] === p.pose)[1]} · ${fmtDate(p.date, { day: 'numeric', month: 'long', year: 'numeric' })}`, `
+    <div class="cmpbox" style="margin-top:6px">${photoImg(p)}</div>
+    <button class="btn block" id="phDel" style="margin-top:12px;color:var(--danger)">Delete this photo</button>`, el => {
+    el.querySelector('#phDel').onclick = async () => {
+      if (!confirm('Delete this photo? This can’t be undone.')) return;
+      const ph = Object.assign({}, S.log.photos); delete ph[id]; S.log.photos = ph;
+      save(LS.photoPending, load(LS.photoPending, []).filter(x => x !== p.path));
+      const c = await photoCache(); if (c) c.delete(photoKey(p.path)).catch(() => {});
+      if (S.photoBefore === id) S.photoBefore = null;
+      closeSheet(); markDirty('photos.json'); toast('Photo deleted');
+      if (S.token) try { const j = await ghr(DATA_REPO, '/contents/' + p.path); await ghr(DATA_REPO, '/contents/' + p.path, { method: 'DELETE', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ message: 'Delete ' + p.path, sha: j.sha }) }); } catch (e) {}
+    };
+  });
+}
+
 // ---------- nutrition plan (page images in the private repo, cached for offline) ----------
 const PLAN_CACHE = 'guy-plan-v1';
 async function planFile(path, fresh) {
@@ -1683,7 +1801,8 @@ function viewProgress() {
       <tr class="avg"><td>Avg</td><td>${f1(avgOf(past.map(r => r.w)))}</td><td>${fr(avgOf(logged.map(r => r.t.kcal)))}</td><td>${fr(avgOf(logged.map(r => r.t.p)))}</td><td>${(x => x == null ? '–' : (x / 1000).toFixed(1))(avgOf(past.map(r => r.d.water_ml || null)))}</td><td>${fr(avgOf(past.map(r => r.st)))}</td><td>${f1(avgOf(past.map(r => r.sl)))}</td><td>${past.reduce((a, r) => a + r.d.workouts.length, 0)}</td></tr>
       </tbody></table></div><p class="small muted" style="margin:8px 0 0">Bright means the day hit its target. Calories count within 10%.</p></div>
     <h2>Measurements<button data-act="measure">+ Measure</button></h2>
-    <div class="card" style="padding:6px 18px">${m0 ? `<div class="list">${mrow('waist', 'Waist') + mrow('chest', 'Chest') + mrow('hips', 'Hips') + mrow('arm', 'Arm') + mrow('thigh', 'Thigh') + mrow('bodyfat', 'Body fat')}</div>` : '<div class="empty">Measure your waist every 2 weeks, same time of day. It often shows fat loss the scale hides.</div>'}</div>`;
+    <div class="card" style="padding:6px 18px">${m0 ? `<div class="list">${mrow('waist', 'Waist') + mrow('chest', 'Chest') + mrow('hips', 'Hips') + mrow('arm', 'Arm') + mrow('thigh', 'Thigh') + mrow('bodyfat', 'Body fat')}</div>` : '<div class="empty">Measure your waist every 2 weeks, same time of day. It often shows fat loss the scale hides.</div>'}</div>
+    ${photoCard()}`;
 }
 function drawChart() {
   const box = $('chartbox'); if (!box) return;
@@ -1867,6 +1986,9 @@ document.addEventListener('click', e => {
   if (a === 'openPR') return sheetPR(b.dataset.name, b.dataset.kind, b.dataset.unit);
   if (a === 'newPR') return sheetNewPR();
   if (a === 'measure') return sheetMeasure();
+  if (a === 'photoAdd') return sheetPhotoAdd();
+  if (a === 'photoPose') { S.photoPose = b.dataset.v; S.photoBefore = null; return render(); }
+  if (a === 'photoPick') { if (b.classList.contains('sel') || b.classList.contains('now')) return sheetPhotoView(b.dataset.id); S.photoBefore = b.dataset.id; return render(); }
   if (a === 'range') { S.chartRange = Number(b.dataset.n); return render(); }
   if (a === 'download') { const blob = new Blob([toCSV(foods())], { type: 'text/csv;charset=utf-8' }); const u = URL.createObjectURL(blob); const l = document.createElement('a'); l.href = u; l.download = 'foods.csv'; document.body.appendChild(l); l.click(); l.remove(); setTimeout(() => URL.revokeObjectURL(u), 2000); return; }
   if (a === 'saveToken') { const t = $('tok').value.trim(); if (!t) return $('tok').focus(); S.token = t; save(LS.token, t); S.syncErr = null; S.lerr = null; render(); pull().then(() => { render(); sync(); }); syncAll(); return; }
