@@ -1242,7 +1242,7 @@ function nextTarget(hist, w, m) {
   return { kg, reps: Math.min(hi, minR + 1), up: false, why: `Same weight. Aim for ${Math.min(hi, minR + 1)}+ reps a set, and when every set reaches ${hi} the weight goes up.`, last: ref.m.sets };
 }
 function sessionCard(date, w, actions = true) {
-  const st = sessionStats(w), meta = [wTime(w), w.minutes ? w.minutes + ' min' : '', w.kcal ? Math.round(w.kcal) + ' kcal' : '', w.rpe ? 'RPE ' + w.rpe : '', st.vol ? fmtKg(st.vol) + ' lifted' : ''].filter(Boolean);
+  const st = sessionStats(w), meta = [wTime(w), w.minutes ? w.minutes + ' min' : '', w.kcal ? Math.round(w.kcal) + ' kcal' : '', w.rpe ? 'Effort ' + w.rpe + '/10' : '', st.vol ? fmtKg(st.vol) + ' lifted' : ''].filter(Boolean);
   const hists = {}, live = actions && date >= shift(ymd(), -1); // today, yesterday and planned days get kg/reps boxes
   // planned numbers stay grey until the set is touched (typed in, or its rest timer started), or the workout is finished
   const grey = x => date >= ymd() && !w.finishedAt && !x.done;
@@ -1464,7 +1464,7 @@ function sheetWorkout(pre = {}, editDate) {
     <div class="seg" id="wkP" role="group" aria-label="Where">${Object.entries(PLACES).map(([k, p]) => `<button type="button" data-place="${k}" aria-pressed="${k === D.place}"><i class="pdot" style="background:${p.color}"></i>${p.name}</button>`).join('')}</div>
     <div class="grid2"><label class="f">Type<select id="wkK">${['Class', 'Gym', 'WOD', 'Strength', 'Cardio', 'Other'].map(k => `<option${k === D.kind ? ' selected' : ''}>${k}</option>`).join('')}</select></label><label class="f">Name<input type="text" id="wkN" dir="auto" value="${esc(D.name || '')}" placeholder="Morfit class, Gym A"></label></div>
     <div class="grid2"><label class="f">Date<input type="date" id="wkDt" value="${date0}" max="${maxDay()}"></label><label class="f">Start time<input type="time" id="wkT" value="${esc(D.time || '')}"></label></div>
-    <div class="grid3"><label class="f">Minutes<input type="number" id="wkMin" inputmode="numeric" value="${D.minutes ?? ''}"></label><label class="f">kcal<input type="number" id="wkKc" inputmode="numeric" value="${D.kcal ?? ''}"></label><label class="f">RPE 1–10<input type="number" id="wkR" inputmode="numeric" min="1" max="10" value="${D.rpe ?? ''}"></label></div>
+    <div class="grid3"><label class="f">Minutes<input type="number" id="wkMin" inputmode="numeric" value="${D.minutes ?? ''}"></label><label class="f">kcal<input type="number" id="wkKc" inputmode="numeric" value="${D.kcal ?? ''}"></label><label class="f">Effort 1–10<input type="number" id="wkR" inputmode="numeric" min="1" max="10" value="${D.rpe ?? ''}"></label></div>
     <span class="lbl">What you did</span>
     <div id="wkParts">${partsHTML()}</div>
     <button class="btn block" id="wkAddPart">+ Add part</button>
