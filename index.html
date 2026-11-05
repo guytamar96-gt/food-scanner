@@ -234,6 +234,12 @@ h2 span.over { color: var(--warn); }
 .lset { display: grid; grid-template-columns: 30px 1fr 1fr 62px; gap: 6px 8px; align-items: center; padding: 2px 0 12px; border-bottom: 1px solid var(--hair); }
 .lset .h { font-size: 11px; font-weight: 600; letter-spacing: .06em; text-transform: uppercase; color: var(--muted); }
 .lset .n { font-family: var(--display); font-weight: 700; color: var(--muted); text-align: center; font-variant-numeric: tabular-nums; }
+.lset input.tgtv { color: var(--dim); font-weight: 600; }
+.lset .rt.off { opacity: .35; }
+.wstart { display: flex; flex-direction: column; gap: 6px; align-items: center; margin: 12px 0 4px; }
+.wstart .btn { margin: 0; }
+.wstart .wfin { border-color: var(--pc, var(--accent)); color: var(--pc, var(--accent)); }
+.wstart.done { flex-direction: row; justify-content: space-between; font-weight: 600; color: var(--muted); }
 .lset input { height: 44px; padding: 0 12px; text-align: center; font-family: var(--display); font-size: 17px; font-weight: 700; background: var(--panel2); }
 .lset input:focus { border-color: var(--pc, var(--accent)); }
 .lset .rt { height: 44px; border-radius: 12px; border: 0; background: none; color: var(--muted); font-size: 13px; font-weight: 700; font-variant-numeric: tabular-nums; display: flex; align-items: center; justify-content: center; gap: 4px; padding: 0; }
@@ -438,7 +444,7 @@ function slug(s) { return String(s).toLowerCase().replace(/[^a-z0-9֐-׿]+/g, '-
 function load(k, d) { try { const v = JSON.parse(localStorage.getItem(k)); return v == null ? d : v; } catch (e) { return d; } }
 function save(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch (e) {} }
 function clone(o) { return JSON.parse(JSON.stringify(o)); }
-function toast(t) { const el = document.createElement('div'); el.className = 'toast'; el.textContent = t; document.body.appendChild(el); setTimeout(() => el.remove(), 2400); }
+function toast(t) { document.querySelectorAll('.toast').forEach(x => x.remove()); const el = document.createElement('div'); el.className = 'toast'; el.textContent = t; document.body.appendChild(el); setTimeout(() => el.remove(), 2400); }
 
 // water goal confetti: lime, blue, purple, about 1.6 s; reduced motion gets the message only
 function confetti() {
@@ -1218,10 +1224,12 @@ function nextTarget(hist, w, m) {
 function sessionCard(date, w, actions = true) {
   const st = sessionStats(w), meta = [wTime(w), w.minutes ? w.minutes + ' min' : '', w.kcal ? Math.round(w.kcal) + ' kcal' : '', w.rpe ? 'RPE ' + w.rpe : '', st.vol ? fmtKg(st.vol) + ' lifted' : ''].filter(Boolean);
   const hists = {}, live = actions && date >= shift(ymd(), -1); // today, yesterday and planned days get kg/reps boxes
+  // planned numbers stay grey until the set is touched (typed in, or its rest timer started), or the workout is finished
+  const grey = x => date >= ymd() && !w.finishedAt && !x.done;
   const setRows = (pi, mi, m, tg) => {
     const ss = m.sets || [], at = `data-date="${date}" data-wid="${esc(w.id)}" data-p="${pi}" data-m="${mi}"`;
     if (ss.length && ss.every(x => x.sec != null && x.reps == null)) return '';
-    return `<div class="lset"><span></span><span class="h">kg${m.each ? ' each' : ''}</span><span class="h">Reps</span><span class="h" style="text-align:center">Rest</span>${ss.map((x, si) => `<span class="n">${si + 1}</span><input class="lkg" type="number" inputmode="decimal" step="any" min="0" ${at} data-s="${si}" value="${x.kg ?? ''}" placeholder="${tg ? tg.kg : '–'}" aria-label="${esc(m.name)} set ${si + 1} kg"><input class="lrep" type="number" inputmode="numeric" min="0" ${at} data-s="${si}" value="${x.reps ?? ''}" placeholder="${tg ? tg.reps : '–'}" aria-label="${esc(m.name)} set ${si + 1} reps">${restBtn(date, w, pi, mi, si)}`).join('')}<span></span><button class="add" data-act="liveAddSet" ${at}>+ Set</button></div>`;
+    return `<div class="lset"><span></span><span class="h">kg${m.each ? ' each' : ''}</span><span class="h">Reps</span><span class="h" style="text-align:center">Rest</span>${ss.map((x, si) => `<span class="n">${si + 1}</span><input class="lkg${grey(x) ? ' tgtv' : ''}" type="number" inputmode="decimal" step="any" min="0" ${at} data-s="${si}" value="${x.kg ?? ''}" placeholder="${tg ? tg.kg : '–'}" aria-label="${esc(m.name)} set ${si + 1} kg"><input class="lrep${grey(x) ? ' tgtv' : ''}" type="number" inputmode="numeric" min="0" ${at} data-s="${si}" value="${x.reps ?? ''}" placeholder="${tg ? tg.reps : '–'}" aria-label="${esc(m.name)} set ${si + 1} reps">${restBtn(date, w, pi, mi, si)}`).join('')}<span></span><button class="add" data-act="liveAddSet" ${at}>+ Set</button></div>`;
   };
   const parts = (w.parts || []).map((p, pi) => `<div class="part"><div class="part-h"><b>${esc(p.label || 'Part')}</b>${p.title ? `<span dir="auto">${esc(p.title)}</span>` : ''}</div>${(p.moves || []).map((m, mi) => {
     let tg; const key = moveKey(m.name), hist = hists[key] || (hists[key] = moveHistory(key)), i = hist.findIndex(h => h.m === m), v = moveVerdict(hist, i);
@@ -1229,6 +1237,7 @@ function sessionCard(date, w, actions = true) {
   }).join('')}</div>`).join('');
   return `<div class="sess" style="--pc:${PLACES[placeOf(w)].color}">
     <div class="sess-h"><div class="sess-d"><b>${fmtDate(date, { weekday: 'long' })}</b><span>${fmtDate(date, { day: 'numeric', month: 'long' })}</span></div>${placePill(w)}</div>
+    ${live && date >= ymd() ? startBar(date, w) : ''}
     <div class="sess-t" dir="auto">${esc(w.name || w.kind || 'Workout')}${w.score ? ` <span class="score">${esc(w.score)}</span>` : ''}${w.scale && w.scale !== 'n/a' && w.scale !== 'Rx' ? ` <span class="pill xs">${esc(w.scale)}</span>` : ''}</div>
     ${meta.length ? `<div class="sess-m">${meta.map(esc).join(' · ')}</div>` : ''}
     ${parts}
@@ -1252,9 +1261,17 @@ function restFor(p, m, mi) {
 }
 const fmtRest = s => Math.floor(s / 60) + ':' + String(s % 60).padStart(2, '0');
 const TIMER_ICON = '<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="13" r="8"/><path d="M12 9v4l2.5 2M10 2h4"/></svg>';
+function wRunning(w) { return !!w.startedAt && !w.finishedAt; }
+function startBar(date, w) {
+  const at = `data-date="${date}" data-wid="${esc(w.id)}"`;
+  if (w.finishedAt) return `<div class="wstart done"><span>Finished${w.minutes ? ' · ' + w.minutes + ' min' : ''}</span><button class="link" data-act="wResume" ${at}>Resume</button></div>`;
+  if (w.startedAt) return `<div class="wstart"><button class="btn block wfin" data-act="wFinish" ${at}>Finish workout</button><span class="small muted">Started ${new Date(w.startedAt).toTimeString().slice(0, 5)} · rest timers are on</span></div>`;
+  return `<div class="wstart"><button class="btn primary block" data-act="wStart" ${at}>Start workout</button><span class="small muted">Rest timers turn on once you start</span></div>`;
+}
 function restBtn(date, w, pi, mi, si) {
   const p = w.parts[pi], m = p.moves[mi], sec = restFor(p, m, mi), key = [date, w.id, pi, mi, si].join('|');
   if (!sec) return '<span class="rt" title="Superset: go to the next exercise">→</span>';
+  if (!wRunning(w)) return `<span class="rt off" aria-hidden="true">${TIMER_ICON}${fmtRest(sec)}</span>`;
   const on = REST.key === key;
   return `<button class="rt${on ? ' on' : ''}" data-act="rest" data-key="${esc(key)}" data-sec="${sec}" data-name="${esc(m.name)}" data-set="${si + 1}" aria-label="Start ${fmtRest(sec)} rest after set ${si + 1}">${on ? '' : TIMER_ICON}${fmtRest(on ? Math.max(0, Math.ceil((REST.end - Date.now()) / 1000)) : sec)}</button>`;
 }
@@ -1287,11 +1304,22 @@ function stopRest() {
 }
 function refreshRestBtn(k) { const b = document.querySelector(`.rt[data-key="${CSS.escape(k)}"]`); if (b) { b.classList.remove('on'); b.innerHTML = TIMER_ICON + fmtRest(Number(b.dataset.sec)); } }
 
-// pointerdown runs before the kg/reps box loses focus and the card redraws, so the tap isn't lost
+// a rest timer starts only on a real tap: the finger lifts within 10 px and 700 ms of touching it, so scrolling over it does nothing.
+// The button is read on pointerdown, because a kg/reps box losing focus can redraw the card before the finger lifts.
+let REST_TAP = null;
 document.addEventListener('pointerdown', e => {
-  const b = e.target.closest && e.target.closest('button.rt[data-act=rest]'); if (!b) return;
-  if (REST.key === b.dataset.key) return stopRest();
-  startRest(b.dataset.key, Number(b.dataset.sec), `${b.dataset.name}, set ${b.dataset.set}`); b.classList.add('on');
+  const b = e.target.closest && e.target.closest('button.rt[data-act=rest]');
+  REST_TAP = b ? { x: e.clientX, y: e.clientY, t: Date.now(), ds: Object.assign({}, b.dataset) } : null;
+});
+document.addEventListener('pointercancel', () => { REST_TAP = null; });
+document.addEventListener('pointerup', e => {
+  const tp = REST_TAP; REST_TAP = null;
+  if (!tp || Math.hypot(e.clientX - tp.x, e.clientY - tp.y) > 10 || Date.now() - tp.t > 700) return;
+  const ds = tp.ds;
+  if (REST.key === ds.key) return stopRest();
+  startRest(ds.key, Number(ds.sec), `${ds.name}, set ${ds.set}`);
+  const [date, wid, p, m, si] = ds.key.split('|');
+  liveSet({ date, wid, p, m }, ss => { if (ss[+si]) ss[+si].done = true; }); render();
 });
 // edit one movement's sets straight from the session card
 function liveSet(ds, fn) {
@@ -1304,7 +1332,7 @@ document.addEventListener('change', e => {
   const t = e.target; if (!t.matches || !t.matches('.lset input')) return;
   const n = num(t.value), k = t.classList.contains('lkg') ? 'kg' : 'reps';
   const other = t.parentNode.querySelector(`.${k === 'kg' ? 'lrep' : 'lkg'}[data-s="${t.dataset.s}"]`), ok = k === 'kg' ? 'reps' : 'kg', ov = other && !other.value ? num(other.placeholder) : null;
-  liveSet(t.dataset, ss => { const x = ss[+t.dataset.s]; if (!x) return; x[k] = n == null || n < 0 ? null : k === 'reps' ? Math.round(n) : n; if (x[k] != null && x[ok] == null && ov != null) { x[ok] = ov; other.value = ov; } }); // typing one box takes the target for the other
+  liveSet(t.dataset, ss => { const x = ss[+t.dataset.s]; if (!x) return; x.done = true; x[k] = n == null || n < 0 ? null : k === 'reps' ? Math.round(n) : n; if (x[k] != null && x[ok] == null && ov != null) { x[ok] = ov; other.value = ov; } }); // typing one box takes the target for the other
   toast('Saved');
 });
 function workoutHTML(w, actions) { return sessionCard(S.date, w, actions); }
@@ -1993,7 +2021,22 @@ document.addEventListener('click', e => {
   if (a === 'workout') return sheetWorkout();
   if (a === 'logWatch') { const x = ((H(S.date) || {}).exercise || []).find(z => z.start === b.dataset.start); if (x) sheetWorkout({ kind: /strength|weight/i.test(x.type) ? 'Gym' : 'Class', name: niceType(x.type), time: new Date(x.start).toTimeString().slice(0, 5), minutes: Math.round(x.minutes || 0) || null, kcal: x.kcal ? Math.round(x.kcal) : null, watch: x.start }); return; }
   if (a === 'delWorkout') { if (!b.dataset.arm) { b.dataset.arm = 1; b.textContent = 'Tap again to delete'; return; } return editDay(b.dataset.date || S.date, x => { x.workouts = x.workouts.filter(w => w.id !== b.dataset.id); }); }
-  if (a === 'rest') return; // handled on pointerdown
+  if (a === 'rest') return; // handled on pointerup
+  if (a === 'wStart' || a === 'wFinish' || a === 'wResume') {
+    const now = new Date().toISOString();
+    editDay(b.dataset.date, d => {
+      const w = d.workouts.find(x => x.id === b.dataset.wid); if (!w) return;
+      if (a === 'wStart') { w.startedAt = now; delete w.finishedAt; w.time = new Date().toTimeString().slice(0, 5); }
+      if (a === 'wResume') delete w.finishedAt;
+      if (a === 'wFinish') {
+        w.finishedAt = now; w.minutes = Math.max(1, Math.round((Date.now() - new Date(w.startedAt).getTime()) / 60000));
+        for (const pt of w.parts || []) for (const mv of pt.moves || []) for (const x of mv.sets || []) x.done = true;
+      }
+      w.updatedAt = now; d.train = true;
+    });
+    if (a !== 'wStart') stopRest();
+    toast(a === 'wStart' ? 'Workout started' : a === 'wFinish' ? 'Workout finished' : 'Workout resumed'); return render();
+  }
   if (a === 'restStop') return stopRest();
   if (a === 'liveFill') { const kg = num(b.dataset.kg), reps = num(b.dataset.reps); liveSet(b.dataset, ss => { if (!ss.length) ss.push({ reps: null, kg: null }); for (const x of ss) { if (x.kg == null) x.kg = kg; if (x.reps == null) x.reps = reps; } }); render(); toast('Saved'); return; }
   if (a === 'liveAddSet') { liveSet(b.dataset, ss => { const l = ss[ss.length - 1]; ss.push(l ? Object.assign({}, l) : { reps: null, kg: null }); }); render(); return; }
