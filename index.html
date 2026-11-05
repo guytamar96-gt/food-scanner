@@ -117,6 +117,11 @@ label.f input, label.f select, label.f textarea { margin-top: 6px; background: v
 .search svg { width: 18px; height: 18px; fill: none; stroke: var(--muted); stroke-width: 1.8; stroke-linecap: round; flex: none; }
 /* lists */
 .list .item { display: flex; align-items: center; gap: 14px; padding: 13px 0; border-bottom: 1px solid var(--hair); }
+.prow { width: 100%; background: none; border: 0; border-bottom: 1px solid var(--hair); color: var(--text); text-align: left; }
+.prow .n { display: block; font-weight: 600; }
+.prow .s { display: block; font-size: 13px; color: var(--muted); }
+.prow .pd { flex: none; text-align: right; font-size: 12px; color: var(--muted); line-height: 1.2; }
+.prow .pd b { display: block; font-family: var(--display); font-size: 15px; color: var(--text); }
 .list .item:last-child { border-bottom: 0; }
 .list .item .t { flex: 1; min-width: 0; }
 .list .item .n { font-weight: 600; overflow-wrap: anywhere; }
@@ -1125,6 +1130,23 @@ function placeOf(w) { return PLACES[w.place] ? w.place : /^(gym|strength)$/i.tes
 function placePill(w) { const p = PLACES[placeOf(w)]; return `<span class="pill xs place" style="--pc:${p.color}">${esc(p.name)}</span>`; }
 function moveKey(n) { return slug(String(n).replace(/\s+/g, ' ').trim()); }
 function wTime(w) { return w.time || (w.loggedAt || '').slice(11, 16) || ''; }
+// past workouts: one line each, tap to open that day
+function sessRow(x) {
+  const st = sessionStats(x.w), meta = [x.w.kcal ? Math.round(x.w.kcal) + ' kcal' : '', st.vol ? fmtKg(st.vol) + ' lifted' : '', st.groups.slice(0, 3).join(', ')].filter(Boolean).join(' · ');
+  return `<button class="item tap prow" data-act="openDay" data-date="${x.date}"><i class="pdot" style="background:${PLACES[placeOf(x.w)].color}"></i><span class="t"><span class="n" dir="auto">${esc(x.w.name || x.w.kind || 'Workout')}</span><span class="s">${esc(meta)}</span></span><span class="pd">${fmtDate(x.date, { weekday: 'short' })}<b>${fmtDate(x.date, { day: 'numeric', month: 'short' })}</b></span></button>`;
+}
+function pastSessions(pf, except) { return allSessions().filter(x => x.date <= ymd() && x.date !== except && (pf === 'all' || placeOf(x.w) === pf)); }
+function placeSeg(pf, act) { return `<div class="seg sm" role="group" aria-label="Filter by place" style="margin-bottom:6px">${[['all', 'All'], ...Object.entries(PLACES).map(([k, p]) => [k, p.name])].map(([k, n]) => `<button data-act="${act}" data-v="${k}" aria-pressed="${pf === k}">${n}</button>`).join('')}</div>`; }
+function pastCard(date, pf, last30) {
+  const all = pastSessions('all', date); if (!all.length) return '';
+  const rows = pastSessions(pf, date).slice(0, 5);
+  return `<h2>Past workouts<span>${last30} in 30 days</span></h2><div class="card">${placeSeg(pf, 'placeFilter')}<div class="list">${rows.map(sessRow).join('') || '<div class="empty">None here yet.</div>'}</div>${pastSessions(pf, date).length > 5 ? '<button class="btn block" data-act="allPast">See all past workouts</button>' : ''}</div>`;
+}
+function sheetPast(pf = S.placeFilter || 'all') {
+  const xs = pastSessions(pf), byM = {};
+  for (const x of xs) (byM[x.date.slice(0, 7)] ||= []).push(x);
+  openSheet('Past workouts', `${placeSeg(pf, 'pastFilter')}${Object.entries(byM).map(([m, a]) => `<span class="lbl">${fmtDate(m + '-01', { month: 'long', year: 'numeric' })} · ${a.length}</span><div class="list">${a.map(sessRow).join('')}</div>`).join('') || '<div class="empty">None here yet.</div>'}`);
+}
 function allSessions() { // newest first
   const out = [];
   for (const d of Object.values(S.log.days)) for (const w of d.workouts || []) out.push({ date: d.date, w });
@@ -1755,12 +1777,12 @@ function viewTrain() {
       return `<button class="pr" data-act="openPR" data-name="${esc(n)}" data-kind="lift"><span class="n">${esc(n)}</span>${one ? `<span class="b">${one.kg} kg</span><span class="d">${one.reps || 1}RM · ${fmtDate(one.date, { day: 'numeric', month: 'short' })}</span>` : '<span class="b none">No PR yet</span>'}</button>`; }).join('')
     : [...BENCH.map(b => ({ name: b[0], unit: b[1] })), ...Object.values(S.log.prs).filter(p => p.kind === 'bench' && !BENCH.some(b => b[0] === p.name)).map(p => ({ name: p.name, unit: p.unit }))].map(it => { const pr = S.log.prs[prId(it.name)], b = bestOf(pr);
       return `<button class="pr" data-act="openPR" data-name="${esc(it.name)}" data-kind="bench" data-unit="${it.unit}"><span class="n">${esc(it.name)}</span>${b ? `<span class="b">${fmtScore(b, pr.unit)}</span><span class="d">${esc(b.scale || 'Rx')} · ${fmtDate(b.date, { day: 'numeric', month: 'short' })}</span>` : '<span class="b none">Not done yet</span>'}</button>`; }).join('');
-  const pf = S.placeFilter || 'all', recent = allSessions().filter(x => x.date !== S.date && (pf === 'all' || placeOf(x.w) === pf)), shown = recent.slice(0, S.moreSess ? 40 : 4), moves = movesList();
+  const pf = S.placeFilter || 'all', moves = movesList();
   return `
     ${weekCard(S.date)}
     <h2>${S.date === ymd() ? 'Today' : esc(fmtDate(S.date, { weekday: 'long', day: 'numeric', month: 'short' }))}<button data-act="workout">+ Log workout</button></h2>
-    ${d.workouts.length ? d.workouts.map(w => `<div class="card">${sessionCard(S.date, w)}</div>`).join('') : '<div class="card"><div class="empty">No training logged for this day.</div></div>'}
-    ${allSessions().some(x => x.date !== S.date) ? `<h2>Recent sessions<span>${last30} in 30 days</span></h2><div class="seg sm" role="group" aria-label="Filter by place" style="margin-bottom:12px">${[['all', 'All'], ...Object.entries(PLACES).map(([k, p]) => [k, p.name])].map(([k, n]) => `<button data-act="placeFilter" data-v="${k}" aria-pressed="${pf === k}">${n}</button>`).join('')}</div>${shown.length ? '' : '<div class="card"><div class="empty">No sessions here yet.</div></div>'}${shown.map(x => `<div class="card">${sessionCard(x.date, x.w)}</div>`).join('')}${recent.length > shown.length ? '<button class="btn block" data-act="moreSess">Show older sessions</button>' : ''}` : ''}
+    ${d.workouts.length ? d.workouts.map(w => `<div class="card">${sessionCard(S.date, w)}</div>`).join('') : `<div class="card"><div class="empty">${S.date > ymd() ? 'Nothing planned for this day yet.' : 'Rest day. No workout logged.'}</div></div>`}
+    ${pastCard(S.date, pf, last30)}
     ${moves ? `<h2>Your movements<span>tap one to see progress</span></h2><div class="card" style="padding:4px 18px">${moves}</div>` : ''}
     <h2>PR board<button data-act="newPR">+ Add movement</button></h2>
     <div class="card"><div class="seg" role="group"><button data-act="prMode" data-mode="lift" aria-pressed="${S.prMode === 'lift'}">Lifts</button><button data-act="prMode" data-mode="bench" aria-pressed="${S.prMode === 'bench'}">Benchmark WODs</button></div><div class="prgrid">${list}</div></div>`;
@@ -1980,7 +2002,9 @@ document.addEventListener('click', e => {
   if (a === 'plan') return sheetPlan();
   if (a === 'planPdf') return planPdf(b);
   if (a === 'placeFilter') { S.placeFilter = b.dataset.v; return render(); }
-  if (a === 'moreSess') { S.moreSess = true; return render(); }
+  if (a === 'allPast') return sheetPast();
+  if (a === 'pastFilter') { S.placeFilter = b.dataset.v; return sheetPast(); }
+  if (a === 'openDay') { closeSheet(); goDate(b.dataset.date); window.scrollTo(0, 0); return; }
   if (a === 'catAll') { S.catAll = true; $('catList').hidden = false; b.hidden = true; return; }
   if (a === 'prMode') { S.prMode = b.dataset.mode; return render(); }
   if (a === 'openPR') return sheetPR(b.dataset.name, b.dataset.kind, b.dataset.unit);
