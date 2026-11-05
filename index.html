@@ -234,6 +234,10 @@ h2 span.over { color: var(--warn); }
 .lset { display: grid; grid-template-columns: 30px 1fr 1fr 62px; gap: 6px 8px; align-items: center; padding: 2px 0 12px; border-bottom: 1px solid var(--hair); }
 .lset .h { font-size: 11px; font-weight: 600; letter-spacing: .06em; text-transform: uppercase; color: var(--muted); }
 .lset .n { font-family: var(--display); font-weight: 700; color: var(--muted); text-align: center; font-variant-numeric: tabular-nums; }
+.prv { color: var(--accent); font-weight: 700; }
+.tgt-c { color: var(--muted); }
+.tgt-c b { color: var(--text); font-weight: 600; }
+.tgt-c.solo { font-size: 13px; margin: 0 0 10px; }
 .lset input.tgtv { color: var(--dim); font-weight: 600; }
 .lset .rt.off { opacity: .35; }
 .wstart { display: flex; flex-direction: column; gap: 6px; align-items: center; margin: 12px 0 4px; }
@@ -1166,6 +1170,22 @@ function moveStats(m) {
   }
   return { top, topReps, vol, reps, sec, n: (m.sets || []).length };
 }
+// the coach already put weights in this movement's sets, so the app's own suggestion would only clash with it
+function coachSet(m) { return (m.sets || []).some(x => x.kg != null); }
+// personal record for a movement from earlier sessions: heaviest set (more reps breaks a tie), else most reps, else longest hold
+function prLine(hist, m, date) {
+  let best = null;
+  for (const h of hist) {
+    if (h.m === m || h.date >= date) continue;
+    for (const x of h.m.sets || []) {
+      const c = { kg: x.kg || 0, reps: x.reps || 0, sec: x.sec || 0, date: h.date, each: h.m.each };
+      if (!best || c.kg > best.kg || (c.kg === best.kg && (c.reps > best.reps || (c.reps === best.reps && c.sec > best.sec)))) best = c;
+    }
+  }
+  if (!best || !(best.kg || best.reps || best.sec)) return 'First time: no record yet';
+  const v = best.kg ? `${best.kg} kg${best.each ? ' each' : ''} × ${best.reps}` : best.reps ? `${best.reps} reps` : `${best.sec} s`;
+  return `Personal record <b class="prv">${esc(v)}</b> · ${esc(fmtDate(best.date, { day: 'numeric', month: 'short' }))}`;
+}
 function moveHistory(key) { // oldest first
   const out = [];
   for (const { date, w } of allSessions().reverse()) for (const p of w.parts || []) for (const m of p.moves || []) if (moveKey(m.name) === key) out.push({ date, w, p, m, st: moveStats(m) });
@@ -1233,7 +1253,7 @@ function sessionCard(date, w, actions = true) {
   };
   const parts = (w.parts || []).map((p, pi) => `<div class="part"><div class="part-h"><b>${esc(p.label || 'Part')}</b>${p.title ? `<span dir="auto">${esc(p.title)}</span>` : ''}</div>${(p.moves || []).map((m, mi) => {
     let tg; const key = moveKey(m.name), hist = hists[key] || (hists[key] = moveHistory(key)), i = hist.findIndex(h => h.m === m), v = moveVerdict(hist, i);
-    return `<button class="mv" data-act="move" data-key="${esc(key)}"><span class="t"><span class="n" dir="auto">${esc(m.name)}${v && v.pr ? ' <span class="pill xs prb">PR</span>' : ''}</span><span class="s" dir="auto">${esc([fmtSets(m), m.note].filter(Boolean).join(' · '))}</span></span>${v ? `<span class="cmp ${v.cls}">${esc(v.text)}</span>` : ''}</button>${live && (tg = nextTarget(hist, w, m)) ? `<div class="tgt${tg.up ? ' up' : ''}"><div class="tgt-r"><span class="tgt-l">Last time</span><span class="tgt-v">${esc(fmtSets({ sets: tg.last, each: m.each }))}</span></div><div class="tgt-r"><span class="tgt-l">Today</span><span class="tgt-v b">${tg.up ? '▲ ' : ''}${tg.kg} kg × ${tg.reps}</span><button class="tgt-fill" data-act="liveFill" data-date="${date}" data-wid="${esc(w.id)}" data-p="${pi}" data-m="${mi}" data-kg="${tg.kg}" data-reps="${tg.reps}">Fill sets</button></div><div class="tgt-w">${esc(tg.why)}</div></div>` : ''}${live ? setRows(pi, mi, m, tg) : ''}`;
+    return `<button class="mv" data-act="move" data-key="${esc(key)}"><span class="t"><span class="n" dir="auto">${esc(m.name)}${v && v.pr ? ' <span class="pill xs prb">PR</span>' : ''}</span><span class="s" dir="auto">${live ? prLine(hist, m, date) : esc([fmtSets(m), m.note].filter(Boolean).join(' · '))}</span></span>${v && !live ? `<span class="cmp ${v.cls}">${esc(v.text)}</span>` : ''}</button>${live && (tg = nextTarget(hist, w, m)) ? `<div class="tgt${tg.up ? ' up' : ''}"><div class="tgt-r"><span class="tgt-l">Last time</span><span class="tgt-v">${esc(fmtSets({ sets: tg.last, each: m.each }))}</span></div>${coachSet(m) ? '' : `<div class="tgt-r"><span class="tgt-l">Today</span><span class="tgt-v b">${tg.up ? '▲ ' : ''}${tg.kg} kg × ${tg.reps}</span><button class="tgt-fill" data-act="liveFill" data-date="${date}" data-wid="${esc(w.id)}" data-p="${pi}" data-m="${mi}" data-kg="${tg.kg}" data-reps="${tg.reps}">Fill sets</button></div><div class="tgt-w">${esc(tg.why)}</div>`}${m.note ? `<div class="tgt-w tgt-c" dir="auto"><b>Coach:</b> ${esc(m.note)}</div>` : ''}</div>` : live && m.note ? `<div class="tgt-c solo" dir="auto"><b>Coach:</b> ${esc(m.note)}</div>` : ''}${live ? setRows(pi, mi, m, tg) : ''}`;
   }).join('')}</div>`).join('');
   return `<div class="sess" style="--pc:${PLACES[placeOf(w)].color}">
     <div class="sess-h"><div class="sess-d"><b>${fmtDate(date, { weekday: 'long' })}</b><span>${fmtDate(date, { day: 'numeric', month: 'long' })}</span></div>${placePill(w)}</div>
