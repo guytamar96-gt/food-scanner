@@ -567,6 +567,7 @@ function delFood(id) {
 // ---------- days ----------
 function blankDay(date) { return { date, weight: null, water_ml: 0, steps: null, sleep_h: null, sleep_q: null, energy: null, soreness: null, note: '', train: null, food: [], workouts: [] }; }
 function normDay(d) { d = Object.assign(blankDay(d.date), d); if (!Array.isArray(d.food)) d.food = []; if (!Array.isArray(d.workouts)) d.workouts = []; return d; }
+for (const [k, d] of Object.entries(S.log.days || {})) if (d && !d.date) d.date = k; // repair days saved without their date
 function day(date = S.date) { return S.log.days[date] ? S.log.days[date] : blankDay(date); }
 function editDay(date, fn) {
   const d = clone(day(date)); fn(d); d.updatedAt = new Date().toISOString();
@@ -676,7 +677,7 @@ async function push(retry = true) {
 const ROOT_FILES = { 'prs.json': 'prs', 'measurements.json': 'meas', 'profile.json': 'profile', 'templates.json': 'templates', 'targets.json': 'coach', 'photos.json': 'photos' };
 function dataFor(path) { if (path.startsWith('days/')) return S.log.days[path.slice(5, 15)]; return S.log[ROOT_FILES[path]]; }
 function applyRemote(path, obj) {
-  if (path.startsWith('days/')) S.log.days[path.slice(5, 15)] = normDay(obj);
+  if (path.startsWith('days/')) S.log.days[path.slice(5, 15)] = normDay(Object.assign({}, obj, { date: path.slice(5, 15) })); // the file name is the date, even if a writer left the field out
   else if (path.startsWith('health/')) S.health[path.slice(7, 17)] = obj;
   else if (ROOT_FILES[path]) S.log[ROOT_FILES[path]] = obj;
 }
