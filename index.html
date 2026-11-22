@@ -442,7 +442,7 @@ const NUMS = ['kcal', 'protein', 'carbs', 'fat', 'sugar', 'sat_fat', 'fibre', 's
 const DEFAULT_MEALS = { rest: { Breakfast: 500, Lunch: 650, Dinner: 550, Snacks: 50 }, train: { Breakfast: 500, Lunch: 650, Dinner: 550, Snacks: 300 } };
 const DEFAULT_TARGETS = { rest: { kcal: 1750, p: 150, c: 165, f: 55, water: 2800 }, train: { kcal: 2000, p: 170, c: 205, f: 55, water: 3500 }, steps: 9000, sleep: 7.5 };
 const LS = { cat: 'fs-catalogue', pending: 'fs-pending', days: 'fs-days', token: 'fs-token', targets: 'fs-targets', train: 'fs-train', sha: 'fs-sha',
-  log: 'fs-log', lsha: 'fs-log-sha', ldirty: 'fs-log-dirty', health: 'fs-health', migrated: 'fs-migrated-v1', photoPending: 'fs-photo-pending' };
+  log: 'fs-log', lsha: 'fs-log-sha', ldirty: 'fs-log-dirty', health: 'fs-health', lbase: 'fs-log-base', migrated: 'fs-migrated-v1', photoPending: 'fs-photo-pending' };
 const LIFTS = ['Back squat', 'Front squat', 'Deadlift', 'Bench press', 'Strict press', 'Push press', 'Clean', 'Clean & jerk', 'Snatch', 'Thruster'];
 const BENCH = [
   ['Fran', 'time', '21-15-9 thrusters 43 kg, pull-ups'], ['Grace', 'time', '30 clean & jerks 61 kg'], ['Isabel', 'time', '30 snatches 61 kg'],
@@ -538,6 +538,7 @@ const S = {
   photoPose: 'front', photoBefore: null,
   lsha: load(LS.lsha, {}),            // GitHub sha of each log file as last seen
   ldirty: load(LS.ldirty, []),        // log files changed on this phone and not yet saved
+  lbase: load(LS.lbase, {}),          // each day file as last agreed with GitHub, so a clash can be merged field by field
   lgen: {}, lsyncing: false, lerr: null, lastPull: 0,
   health: load(LS.health, {}),        // watch data per day, written by the Samsung relay
 };
@@ -677,7 +678,7 @@ async function push(retry = true) {
 const ROOT_FILES = { 'prs.json': 'prs', 'measurements.json': 'meas', 'profile.json': 'profile', 'templates.json': 'templates', 'targets.json': 'coach', 'photos.json': 'photos' };
 function dataFor(path) { if (path.startsWith('days/')) return S.log.days[path.slice(5, 15)]; return S.log[ROOT_FILES[path]]; }
 function applyRemote(path, obj) {
-  if (path.startsWith('days/')) S.log.days[path.slice(5, 15)] = normDay(Object.assign({}, obj, { date: path.slice(5, 15) })); // the file name is the date, even if a writer left the field out
+  if (path.startsWith('days/')) { S.log.days[path.slice(5, 15)] = normDay(Object.assign({}, obj, { date: path.slice(5, 15) })); S.lbase[path] = clone(S.log.days[path.slice(5, 15)]); } // the file name is the date, even if a writer left the field out
   else if (path.startsWith('health/')) S.health[path.slice(7, 17)] = obj;
   else if (ROOT_FILES[path]) S.log[ROOT_FILES[path]] = obj;
 }
@@ -693,6 +694,33 @@ function logErr(e) {
   if (e.status === 401 || e.status === 403) return 'GitHub key not accepted';
   if (e.status === 404) return 'Key can’t reach training-data yet';
   return navigator.onLine ? 'Not saved yet, will retry' : 'Offline, will save later';
+}
+// Three-way merge of a day file when the phone and another writer (the coach, check-ins) both changed it.
+// base = the copy both last agreed on. A field changed on one side only keeps that change; changed on both, the newer copy wins.
+// Food and workouts merge item by item (by id): added on either side is kept, deleted on either side stays deleted.
+function mergeDay(base, mine, theirs) {
+  const nil = v => v === undefined ? null : v, same = (a, b) => JSON.stringify(nil(a)) === JSON.stringify(nil(b)); // a missing field and an empty one are the same
+  base = base || {}; const mineNewer = (mine.updatedAt || '') >= (theirs.updatedAt || '');
+  const pick = (b, m, t, newerMine) => same(m, b) ? t : same(t, b) ? m : (newerMine ? m : t);
+  const list = (b = [], m = [], t = [], stamp) => {
+    const bi = new Map(b.map(x => [x.id, x])), ti = new Map(t.map(x => [x.id, x])), out = [];
+    for (const x of m) {
+      if (!ti.has(x.id)) { if (!bi.has(x.id)) out.push(x); continue; } // new here: keep; was there before but they deleted it: drop
+      const y = ti.get(x.id), bx = bi.get(x.id);
+      out.push(bx ? pick(bx, x, y, stamp(x, y)) : (stamp(x, y) ? x : y));
+    }
+    const have = new Set(m.map(x => x.id));
+    for (const y of t) if (!have.has(y.id) && !bi.has(y.id)) out.push(y); // added by them; if it was in base, I deleted it
+    return out;
+  };
+  const out = {};
+  for (const k of new Set([...Object.keys(base), ...Object.keys(mine), ...Object.keys(theirs)])) {
+    if (k === 'food') out.food = list(base.food, mine.food, theirs.food, () => mineNewer);
+    else if (k === 'workouts') out.workouts = list(base.workouts, mine.workouts, theirs.workouts, (x, y) => (x.updatedAt || mine.updatedAt || '') >= (y.updatedAt || theirs.updatedAt || ''));
+    else if (k !== 'updatedAt') { const v = pick(base[k], mine[k], theirs[k], mineNewer); if (v !== undefined) out[k] = v; }
+  }
+  out.updatedAt = new Date().toISOString();
+  return out;
 }
 async function getFile(path) {
   try { const j = await ghr(DATA_REPO, '/contents/' + path + '?t=' + Date.now(), { cache: 'no-store' }); return { sha: j.sha, obj: JSON.parse(b64ToUtf8(j.content || '') || 'null') }; }
@@ -710,17 +738,24 @@ async function logPush() {
       try { j = await put(S.lsha[path]); }
       catch (e) {
         if (e.status !== 409 && e.status !== 422) throw e;
-        // the file changed elsewhere (another device): keep whichever edit is newer
+        // the file changed elsewhere (the coach, another device): merge both sets of changes, then save the result
         const remote = await getFile(path);
-        if (remote && remote.obj && path.startsWith('days/') && (remote.obj.updatedAt || '') > (body.updatedAt || '')) { S.lsha[path] = remote.sha; applyRemote(path, remote.obj); S.ldirty = S.ldirty.filter(p => p !== path); continue; }
+        if (remote && remote.obj && path.startsWith('days/')) {
+          const date = path.slice(5, 15), merged = mergeDay(S.lbase[path], body, remote.obj);
+          S.log.days[date] = normDay(Object.assign(merged, { date }));
+          const put2 = () => ghr(DATA_REPO, '/contents/' + path, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ message: 'Update ' + path + ' (merged)', content: utf8ToB64(JSON.stringify(S.log.days[date], null, 1) + '\n'), sha: remote.sha }) });
+          j = await put2(); S.lsha[path] = j.content.sha; S.lbase[path] = clone(S.log.days[date]);
+          if ((S.lgen[path] || 0) === gen) S.ldirty = S.ldirty.filter(p => p !== path);
+          render(); continue;
+        }
         j = await put(remote ? remote.sha : undefined);
       }
-      S.lsha[path] = j.content.sha;
+      S.lsha[path] = j.content.sha; if (path.startsWith('days/')) S.lbase[path] = clone(body);
       if ((S.lgen[path] || 0) === gen) S.ldirty = S.ldirty.filter(p => p !== path);
     }
     S.lerr = null;
   } catch (e) { S.lerr = logErr(e); clearTimeout(logPush.t); logPush.t = setTimeout(logPush, 30000); }
-  save(LS.lsha, S.lsha); save(LS.ldirty, S.ldirty); saveLog();
+  save(LS.lsha, S.lsha); save(LS.ldirty, S.ldirty); save(LS.lbase, S.lbase); saveLog();
   S.lsyncing = false; setSync();
   if (S.ldirty.length && !S.lerr) logPush();
 }
@@ -743,7 +778,7 @@ async function logPull() {
       }));
     }
     S.lerr = null;
-    save(LS.lsha, S.lsha); saveLog(); save(LS.health, S.health);
+    save(LS.lsha, S.lsha); save(LS.lbase, S.lbase); saveLog(); save(LS.health, S.health);
   } catch (e) { S.lerr = logErr(e); }
   setSync();
 }
